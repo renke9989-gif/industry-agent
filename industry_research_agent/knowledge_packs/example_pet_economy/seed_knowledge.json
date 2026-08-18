@@ -1,0 +1,45 @@
+[
+  {
+    "industry": "pet_economy",
+    "topic": "市场规模",
+    "content": "中国宠物经济市场规模持续扩大，宠物食品和宠物服务是增长最快的细分赛道",
+    "key_data": [
+      {"metric": "市场规模", "value": "约2500亿元", "year": "2026"},
+      {"metric": "年增速", "value": "15.2%", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["市场", "趋势"]
+  },
+  {
+    "industry": "pet_economy",
+    "topic": "竞争格局",
+    "content": "宠物烘焙赛道竞争分散，以本地小店和网红店为主，缺少全国性龙头，进入壁垒较低",
+    "key_data": [
+      {"metric": "头部品牌集中度", "value": "低", "year": "2026"},
+      {"metric": "进入壁垒", "value": "低", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["竞争", "风险"]
+  },
+  {
+    "industry": "pet_economy",
+    "topic": "商业模式",
+    "content": "宠物烘焙店客单价较高（60-150元），毛利率可观，但获客依赖私域和线下流量",
+    "key_data": [
+      {"metric": "客单价", "value": "60-150元", "year": "2026"},
+      {"metric": "毛利率", "value": "50-60%", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["商业模式", "机会"]
+  },
+  {
+    "industry": "pet_economy",
+    "topic": "趋势",
+    "content": "宠物拟人化消费升级是核心驱动力，一二线城市率先增长，下沉市场潜力大",
+    "key_data": [
+      {"metric": "宠物渗透率", "value": "持续提升", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["趋势", "机会"]
+  }
+]

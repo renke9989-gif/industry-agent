@@ -1,0 +1,67 @@
+[
+  {
+    "id": "TC-001",
+    "name": "宠物烘焙-标准调研",
+    "input": "我想开一家宠物烘焙店，二线城市，预算30万",
+    "industry": "pet_economy",
+    "expected": {
+      "route_sequence": ["market_analyst", "competition_analyst", "business_analyst"],
+      "tool_calls": ["tavily_search", "query_market_data", "calculate_roi"],
+      "final_scores_all_positive": true,
+      "max_turns": 18,
+      "must_contain_keywords": ["市场规模", "竞争", "ROI"],
+      "must_not_contain": ["不知道", "无法判断", "我不确定"]
+    }
+  },
+  {
+    "id": "TC-002",
+    "name": "长尾行业-联网搜索兜底",
+    "input": "我想做二手奢侈品电商，利润率大概多少",
+    "industry": "second_hand_luxury",
+    "expected": {
+      "search_triggered": true,
+      "knowledge_upserted": true,
+      "must_not_contain": ["知识库暂无"]
+    }
+  },
+  {
+    "id": "TC-003",
+    "name": "分析师冲突-裁决测试",
+    "input": "咖啡赛道，市场分析师说高增长值得进，但竞争已经很激烈",
+    "industry": "coffee",
+    "expected": {
+      "conflict_detected": true,
+      "supervisor_action": "present_choice_to_user"
+    }
+  },
+  {
+    "id": "TC-004",
+    "name": "信息不足-Fallback追问",
+    "input": "我想做生意",
+    "expected": {
+      "must_contain_keywords": ["哪个", "什么", "行业", "预算"],
+      "max_turns": 15
+    }
+  },
+  {
+    "id": "TC-005",
+    "name": "商业模式关键词-临时路由切换",
+    "input": "这个生意成本太高了，利润一直在降",
+    "industry": "unknown",
+    "expected": {
+      "route_contains": ["business_analyst"],
+      "must_contain_keywords": ["成本", "ROI", "利润"]
+    }
+  },
+  {
+    "id": "TC-006",
+    "name": "咖啡赛道-跨行业测试",
+    "input": "想开个咖啡店，预算50万，在杭州",
+    "industry": "coffee",
+    "expected": {
+      "route_sequence": ["market_analyst"],
+      "tool_calls": ["tavily_search"],
+      "must_contain_keywords": ["咖啡", "市场", "规模"]
+    }
+  }
+]

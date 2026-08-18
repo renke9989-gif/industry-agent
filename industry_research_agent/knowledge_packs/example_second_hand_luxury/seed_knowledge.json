@@ -1,0 +1,35 @@
+[
+  {
+    "industry": "second_hand_luxury",
+    "topic": "市场规模",
+    "content": "二手奢侈品市场高速增长，年轻消费者接受度提升，鉴定和信任是核心痛点",
+    "key_data": [
+      {"metric": "市场规模", "value": "约800亿元", "year": "2026"},
+      {"metric": "年增速", "value": "22.0%", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["市场", "趋势"]
+  },
+  {
+    "industry": "second_hand_luxury",
+    "topic": "竞争格局",
+    "content": "得物、胖虎、红布林等头部平台占据主要份额，新进入者需解决鉴定信任和供应链问题",
+    "key_data": [
+      {"metric": "头部品牌", "value": "得物/胖虎/红布林", "year": "2026"},
+      {"metric": "进入壁垒", "value": "高", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["竞争", "风险"]
+  },
+  {
+    "industry": "second_hand_luxury",
+    "topic": "商业模式",
+    "content": "二手奢侈品电商靠鉴定服务费、差价和佣金盈利，利润率受真伪鉴定成本挤压",
+    "key_data": [
+      {"metric": "毛利率", "value": "10-20%", "year": "2026"},
+      {"metric": "核心壁垒", "value": "鉴定能力", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["商业模式", "机会"]
+  }
+]

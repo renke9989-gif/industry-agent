@@ -1,0 +1,12 @@
+[
+  {
+    "industry": "在此填写行业标识（如 pet_economy）",
+    "topic": "主题（市场规模/竞争格局/商业模式等）",
+    "content": "调研内容描述",
+    "key_data": [
+      {"metric": "年增速", "value": "15%", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["市场", "趋势"]
+  }
+]

@@ -1,0 +1,30 @@
+# ===== API 密钥与环境变量 =====
+# .env 含真实 API Key（DeepSeek / Tavily），绝对不能提交！
+# 只保留 .env.example 作为模板
+.env*
+!.env.example
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# ===== 向量数据库（本地持久化）=====
+chroma_db/
+*.bin
+
+# ===== 模型 / Node 缓存 =====
+node_modules/
+
+# ===== IDE / 编辑器 =====
+.idea/
+.vscode/
+*.swp
+
+# ===== 运行产物 / 系统文件 =====
+*.log
+.DS_Store
+Thumbs.db

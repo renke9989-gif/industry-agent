@@ -1,0 +1,36 @@
+[
+  {
+    "industry": "coffee",
+    "topic": "市场规模",
+    "content": "中国咖啡市场高速增长，现磨咖啡渗透率快速提升，连锁化率逐年走高",
+    "key_data": [
+      {"metric": "市场规模", "value": "约1300亿元", "year": "2026"},
+      {"metric": "年增速", "value": "18.5%", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["市场", "趋势"]
+  },
+  {
+    "industry": "coffee",
+    "topic": "竞争格局",
+    "content": "咖啡赛道竞争激烈，瑞幸、库迪价格战拉低毛利，精品咖啡差异化空间有限",
+    "key_data": [
+      {"metric": "头部品牌", "value": "瑞幸/库迪/星巴克", "year": "2026"},
+      {"metric": "进入壁垒", "value": "中", "year": "2026"},
+      {"metric": "竞争激烈度", "value": "高", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["竞争", "风险"]
+  },
+  {
+    "industry": "coffee",
+    "topic": "商业模式",
+    "content": "咖啡店毛利率较高但客单价被价格战压低，回本周期取决于选址和复购率",
+    "key_data": [
+      {"metric": "客单价", "value": "15-35元", "year": "2026"},
+      {"metric": "毛利率", "value": "60-70%", "year": "2026"}
+    ],
+    "region": "全国",
+    "related_dimensions": ["商业模式", "机会"]
+  }
+]
