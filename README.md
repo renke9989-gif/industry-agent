@@ -9,7 +9,7 @@
 - **工作流与路由：** 基于 LangGraph 实现 Planner（Supervisor）–Worker 与 Skill Router，按场景选择研究维度；支持动态访谈、追问承接、会话恢复，以及范围明确问题的直接回答。
 - **证据链：** 通过 MCP/Direct Provider 搜索并读取网页，将 URL、摘录、年份、地区和可信度建模为 Evidence，校验 Claim 与引用绑定；未通过校验的结论降级为证据不足。
 - **可靠执行：** 实现 MySQL Run Store、Redis Streams Consumer Group、超时/重试/取消、Lease/Fencing、幂等和并发隔离；SQLite Checkpoint 仅保存 Agent 会话状态，Evidence、报告和 Trace 由 Artifact Store 按 run 原子写入 JSON 文件；同时区分会话状态、任务生命周期与用户明确确认的长期记忆。
-- **质量验证：** 68 个 Python 回归测试、38 个流程 Harness、18 个可靠性故障场景和 12 个 Skill Harness，覆盖重复提交、断线恢复、Worker 崩溃、过期写入和非法 Blueprint；另完成单 Agent / 多 Agent / Evidence 消融实验。
+- **质量验证：** 71 个 Python 回归测试、38 个流程 Harness、18 个可靠性故障场景和 12 个 Skill Harness，覆盖重复提交、断线恢复、Worker 崩溃、过期写入和非法 Blueprint；另完成单 Agent / 多 Agent / Evidence 消融实验。
 - **在线基线：** 10 个行业案例各运行 30 次，共完成 300 次 Direct Provider 联网评测；流程完成率 100%、URL 有效率 100%、工具成功率 95.9%、引用覆盖率 94.4%，平均耗时 28.7 秒、P95 35.8 秒；严格质量门槛通过率 71%。
 
 > 项目重点不是增加 Agent 数量，而是验证：多智能体研究能否在质量、成本、延迟和可靠性之间取得可解释的平衡。
