@@ -1,0 +1,12 @@
+[
+  {"id":"coffee_hangzhou","industry":"咖啡店","input":"想在杭州开咖啡店，预算50万元","required_dimensions":["市场","竞争","商业模式"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"pet_bakery","industry":"宠物烘焙","input":"想在二线城市开宠物烘焙店，预算30万元","required_dimensions":["市场","竞争","商业模式"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"second_hand_luxury","industry":"二手奢侈品电商","input":"二手奢侈品电商的利润率和竞争格局","required_dimensions":["市场","竞争","商业模式"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"cross_border_ecommerce","industry":"跨境电商","input":"跨境电商现在还能进入吗","required_dimensions":["市场","竞争","风险"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"senior_economy","industry":"银发经济","input":"银发经济有哪些创业机会","required_dimensions":["市场","趋势","机会"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"low_altitude_economy","industry":"低空经济","input":"低空经济行业值得投资吗","required_dimensions":["市场","趋势","风险"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"ai_education","industry":"AI教育","input":"AI教育产品的商业模式怎么设计","required_dimensions":["竞争","商业模式","风险"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"robotics","industry":"机器人","input":"机器人行业的市场规模和进入壁垒","required_dimensions":["市场","竞争","风险"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"local_services","industry":"本地生活服务","input":"本地生活服务创业机会","required_dimensions":["竞争","机会","商业模式"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90},
+  {"id":"catering","industry":"餐饮","input":"餐饮店预算50万元是否值得进入","required_dimensions":["市场","竞争","商业模式"],"freshness_year":2026,"max_cost_usd":0.20,"max_latency_seconds":90}
+]

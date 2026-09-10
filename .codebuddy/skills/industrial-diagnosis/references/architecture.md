@@ -1,26 +1,27 @@
-# 架构总览
+# 当前架构
 
-工业诊断 Agent 是基于 LangGraph 的 Supervisor-Worker 多智能体架构。
-
-## 图结构
-
+```text
+用户输入
+  → Supervisor：识别 user_intent + business_stage
+  → 生成 research_plan
+  → 市场 / 竞争 / 商业分析师
+  → MCP Provider（失败降级 Direct）
+  → Evidence
+  → 引用报告
 ```
-START → supervisor → [process_expert / finance_expert / equipment_expert]
-                ↑              ↓
-                └──── Loop 循环 ────┘
+
+核心运行时状态：
+
+- `user_intent`：市场概览、进入可行性、实际 ROI、经营诊断、行业对比。
+- `business_stage`：`pre_launch`、`planning`、`operating`、`unknown`。
+- `assumption_mode`：筹备期允许使用公开行业基准进行情景测算。
+- `research_plan`：根据用户旅程决定研究维度和模式。
+- `evidence`：带来源、时间、摘录和置信度的结构化证据。
+
+验证入口：
+
+```powershell
+.\industry_research_agent\.venv\Scripts\python.exe -m eval.eval_harness
+.\industry_research_agent\.venv\Scripts\python.exe -m eval.online_eval --case coffee_hangzhou --runs 1 --provider direct
+.\industry_research_agent\.venv\Scripts\python.exe -m eval.ablation --runs 1
 ```
-
-## 核心文件
-
-| 文件 | 职责 |
-|------|------|
-| `state.py` | DiagnosisState 定义 |
-| `graph.py` | LangGraph 状态图 + 条件边 |
-| `agents/supervisor.py` | 规则+LLM 混合路由 |
-| `agents/process_expert.py` | 工艺专家 + RAG 工具链 |
-| `agents/finance_expert.py` | 财务专家 + ROI 计算器 |
-| `agents/equipment_expert.py` | 设备专家 + MCP |
-| `tools/` | 知识检索/ROI/MES 工具 |
-| `mcp_servers/` | MCP Server |
-| `eval/` | Eval Harness |
-| `knowledge_packs/` | 可插拔知识包 |

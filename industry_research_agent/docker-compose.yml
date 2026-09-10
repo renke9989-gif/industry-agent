@@ -1,0 +1,85 @@
+services:
+  api:
+    build: .
+    command: python web_server.py
+    ports: ["8000:8000"]
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+      CHECKPOINT_BACKEND: sqlite
+      CHECKPOINT_SQLITE_PATH: /app/data/checkpoints.sqlite3
+      SESSION_CATALOG_SQLITE_PATH: /app/data/sessions.sqlite3
+      ARTIFACT_STORE_PATH: /app/data/artifacts
+      PRIVATE_RAG_SQLITE_PATH: /app/data/private_rag.sqlite3
+      PRIVATE_RAG_SOURCE_ROOT: /app/data/private_docs
+      PRIVATE_RAG_MAX_UPLOAD_BYTES: 20971520
+      PRIVATE_RAG_ENABLED: "true"
+      PRIVATE_RAG_RETRIEVAL: hybrid
+      PRIVATE_RAG_VECTOR_PATH: /app/data/private_rag.chroma
+      PRIVATE_RAG_RERANK: "true"
+      RUN_STORE_BACKEND: mysql
+      EXECUTION_BACKEND: redis
+      MYSQL_DSN: mysql+asyncmy://industry:industry@mysql:3306/industry_agent
+      REDIS_URL: redis://redis:6379/0
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.deepseek.com/v1}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+    volumes: [agent-data:/app/data]
+    depends_on:
+      mysql: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+  worker:
+    build: .
+    command: python worker.py
+    environment:
+      CHECKPOINT_BACKEND: sqlite
+      CHECKPOINT_SQLITE_PATH: /app/data/checkpoints.sqlite3
+      ARTIFACT_STORE_PATH: /app/data/artifacts
+      PRIVATE_RAG_SQLITE_PATH: /app/data/private_rag.sqlite3
+      PRIVATE_RAG_SOURCE_ROOT: /app/data/private_docs
+      PRIVATE_RAG_MAX_UPLOAD_BYTES: 20971520
+      PRIVATE_RAG_ENABLED: "true"
+      PRIVATE_RAG_RETRIEVAL: hybrid
+      PRIVATE_RAG_VECTOR_PATH: /app/data/private_rag.chroma
+      PRIVATE_RAG_RERANK: "true"
+      RUN_STORE_BACKEND: mysql
+      EXECUTION_BACKEND: redis
+      MYSQL_DSN: mysql+asyncmy://industry:industry@mysql:3306/industry_agent
+      REDIS_URL: redis://redis:6379/0
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-deepseek-chat}
+      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.deepseek.com/v1}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+    volumes: [agent-data:/app/data]
+    depends_on:
+      mysql: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    restart: unless-stopped
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: industry_agent
+      MYSQL_USER: industry
+      MYSQL_PASSWORD: industry
+      MYSQL_ROOT_PASSWORD: root
+    volumes: [mysql-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uindustry", "-pindustry"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes: [redis-data:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  agent-data:
+  mysql-data:
+  redis-data:

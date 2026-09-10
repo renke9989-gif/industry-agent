@@ -26,5 +26,13 @@ node_modules/
 
 # ===== 运行产物 / 系统文件 =====
 *.log
+.learnings/review_log.jsonl
+industry_research_agent/eval/results/
 .DS_Store
 Thumbs.db
+
+# ===== Codex / local backup and test artifacts =====
+.codex-backups/
+industry_research_agent/.pytest-temp/
+industry_research_agent/work/
+industry_research_agent/.learnings/review_log.jsonl

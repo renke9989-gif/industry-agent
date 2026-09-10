@@ -4,5 +4,5 @@ set PYTHONIOENCODING=utf-8
 set PYTHONUTF8=1
 REM 检查所有 Agent 的 System Prompt + Tool 绑定是否一致
 cd /d %~dp0..
-python scripts\check_agents.py
+if exist .venv\Scripts\python.exe (.venv\Scripts\python.exe scripts\check_agents.py) else (python scripts\check_agents.py)
 pause

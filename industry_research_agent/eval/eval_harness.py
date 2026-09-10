@@ -1,194 +1,130 @@
-"""
-Agent 评估框架 (Eval Harness)
+"""Offline Agent Harness.
 
-评估维度：
-- 路由准确率：Supervisor 决策是否与预期一致
-- 工具调用准确率：是否在正确时机调用了正确的 Tool
-- 信息完整率：6 维度是否全部覆盖
-- 幻觉率：回答中无依据断言的比例
-- 循环效率：达到 FINISH 所用轮次
-
-使用方式：
-    python eval/eval_harness.py
+This harness is deterministic and does not spend API credits. It validates the
+decisions and contracts that must remain stable; online quality evaluation is a
+separate opt-in command because web results and LLM responses are non-deterministic.
 """
-import os
-import sys
+from __future__ import annotations
+
+import argparse
 import json
+import re
+import sys
+from pathlib import Path
+from typing import Any, Dict, List
+from urllib.parse import urlparse
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 
-from dotenv import load_dotenv
-load_dotenv()
-
-from langchain_core.messages import HumanMessage
-from state import ResearchState
-from graph import compile_graph
-from tools.knowledge_retriever import load_seed_knowledge
-
-
-def load_cases(path: str) -> list:
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+from agents.business_analyst import _missing_terms
+from agents.supervisor import identify_industry
+from research_tools import evidence_is_sufficient, sanitize_web_text
+from triage import triage_request
 
 
-def evaluate(agent, case: dict) -> dict:
-    """评估单个测试用例"""
-    initial_state: ResearchState = {
-        "messages": [HumanMessage(content=case["input"])],
-        "scores": {"市场": 0, "竞争": 0, "商业模式": 0, "机会": 0, "风险": 0, "趋势": 0},
-        "industry": "unknown",
-        "region": "未知",
-        "budget": "未知",
-        "analyst_opinions": {},
-        "analyst_questions": {},
-        "next_agent": "",
-        "research_complete": False,
-        "turn_count": 0,
-        "supervisor_reason": "",
-        "conflicts": [],
-        "knowledge_cache": [],
-        "search_triggered": False,
-        "last_retrieval_score": 0.0,
-        "error_count": 0,
-        "force_finish": False,
-    }
+IMPLEMENTED_ASSERTIONS = {
+    "industry", "required_dimensions", "evidence", "report", "tool_events",
+    "expected_sufficient", "expected_missing_business", "injection_removed",
+    "max_agent_steps", "expect_no_mock", "scenario", "answer_type", "needs_full_report",
+}
 
-    config = {"configurable": {"thread_id": f"eval-{case['id']}"}}
-    final_state = None
 
-    try:
-        for event in agent.stream(initial_state, config):
-            for node_output in event.values():
-                if node_output.get("research_complete"):
-                    final_state = node_output
-        if not final_state:
-            final_state = agent.get_state(config).values
-    except Exception as e:
-        return {"case_id": case["id"], "error": str(e), "scores": {}}
+def load_cases(path: Path) -> List[dict]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def citation_ids(report: str) -> set[str]:
+    return set(re.findall(r"\[(E\d+)\]", report or ""))
+
+
+def evaluate_case(case: dict) -> dict:
+    unknown = set(case.get("expected", {})) - IMPLEMENTED_ASSERTIONS
+    failures: List[str] = []
+    if unknown:
+        failures.append("unsupported assertions: " + ", ".join(sorted(unknown)))
 
     expected = case.get("expected", {})
+    detected = identify_industry(case.get("input", ""))
+    if "industry" in expected and detected != expected["industry"]:
+        failures.append(f"industry expected={expected['industry']} actual={detected}")
 
-    # 提取实际路由序列
-    actual_route = []
-    try:
-        snapshot = agent.get_state(config)
-        if snapshot and snapshot.values:
-            for msg in snapshot.values.get("messages", []):
-                content = getattr(msg, "content", "")
-                if "[Supervisor 决策]" in content:
-                    if "市场分析师" in content:
-                        actual_route.append("market_analyst")
-                    elif "竞争分析师" in content:
-                        actual_route.append("competition_analyst")
-                    elif "商业模式分析师" in content:
-                        actual_route.append("business_analyst")
-    except Exception:
-        pass
+    triage = triage_request(case.get("input", ""))
+    for field in ("scenario", "answer_type", "needs_full_report"):
+        if field in expected and triage[field] != expected[field]:
+            failures.append(f"{field} expected={expected[field]} actual={triage[field]}")
 
-    # 评分
-    scores = {}
+    evidence = expected.get("evidence", [])
+    evidence_ids = {item.get("id") for item in evidence}
+    report = expected.get("report", "")
+    citations = citation_ids(report)
+    invalid_citations = citations - evidence_ids
+    if invalid_citations:
+        failures.append("invalid citations: " + ", ".join(sorted(invalid_citations)))
 
-    # 1. 路由准确率
-    expected_route = expected.get("route_sequence", [])
-    if expected_route:
-        matches = sum(1 for a, e in zip(actual_route, expected_route) if a == e)
-        scores["route_acc"] = matches / max(len(expected_route), 1)
+    valid_url_count = sum(
+        1 for item in evidence
+        if urlparse(item.get("source_url", "")).scheme in ("http", "https")
+        and bool(urlparse(item.get("source_url", "")).netloc)
+    )
+    key_claim_count = len(re.findall(r"\d+(?:\.\d+)?(?:%|％|亿|万|元)", report))
+    citation_coverage = 1.0 if key_claim_count == 0 else min(1.0, len(citations) / key_claim_count)
 
-    # 2. 幻觉检测
-    forbidden = expected.get("must_not_contain", [])
-    all_text = ""
-    try:
-        snapshot = agent.get_state(config)
-        if snapshot and snapshot.values:
-            for msg in snapshot.values.get("messages", []):
-                all_text += getattr(msg, "content", "")
-    except Exception:
-        pass
+    if "expected_sufficient" in expected:
+        actual = evidence_is_sufficient(evidence)
+        if actual != expected["expected_sufficient"]:
+            failures.append(f"evidence sufficiency expected={expected['expected_sufficient']} actual={actual}")
 
-    if forbidden:
-        violations = sum(1 for w in forbidden if w in all_text)
-        scores["hallucination"] = 1.0 - (violations / len(forbidden))
+    if "expected_missing_business" in expected:
+        actual_missing = _missing_terms(case.get("input", ""))
+        if actual_missing != expected["expected_missing_business"]:
+            failures.append(f"business missing expected={expected['expected_missing_business']} actual={actual_missing}")
 
-    # 3. 关键词检测
-    required = expected.get("must_contain_keywords", [])
-    if required:
-        hits = sum(1 for w in required if w in all_text)
-        scores["keyword_coverage"] = hits / len(required)
+    if expected.get("injection_removed"):
+        sanitized = sanitize_web_text(case.get("web_text", ""))
+        if "[untrusted instruction removed]" not in sanitized:
+            failures.append("prompt injection was not neutralized")
 
-    # 4. 搜索触发检测
-    if "search_triggered" in expected:
-        scores["search_triggered"] = 1.0 if final_state.get("search_triggered") else 0.0
+    events = expected.get("tool_events", [])
+    tool_success_rate = sum(bool(item.get("success")) for item in events) / len(events) if events else 1.0
+    source_hosts = {urlparse(item.get("source_url", "")).netloc for item in evidence if item.get("source_url")}
+    authoritative_rate = (
+        sum(item.get("source_type") == "official" for item in evidence) / len(evidence) if evidence else 0.0
+    )
 
-    # 5. 循环效率
-    max_turns = expected.get("max_turns", 15)
-    actual_turns = final_state.get("turn_count", 0)
-    if actual_turns > 0:
-        scores["loop_efficiency"] = min(1.0, max_turns / max(actual_turns, 1))
+    if expected.get("expect_no_mock"):
+        combined = json.dumps(case, ensure_ascii=False).lower()
+        if any(marker in combined for marker in ("random mock", "模拟市场数据", "query_market_data")):
+            failures.append("mock data marker found")
 
     return {
-        "case_id": case["id"],
-        "name": case.get("name", ""),
-        "expected_route": expected_route,
-        "actual_route": actual_route,
-        "turns": actual_turns,
-        "scores": scores
+        "id": case["id"],
+        "passed": not failures,
+        "failures": failures,
+        "metrics": {
+            "citation_coverage": citation_coverage,
+            "valid_url_rate": valid_url_count / len(evidence) if evidence else 0.0,
+            "independent_sources": len(source_hosts),
+            "authoritative_rate": authoritative_rate,
+            "tool_success_rate": tool_success_rate,
+        },
     }
 
 
-def main():
-    print("=" * 60)
-    print("🧪 Agent Eval Harness")
-    print("=" * 60)
-
-    # 加载知识库
-    print("\n[初始化] 加载知识库...")
-    load_seed_knowledge()
-
-    # 编译 Agent
-    print("[初始化] 编译 Agent...")
-    agent = compile_graph()
-
-    # 加载测试用例
-    cases_path = os.path.join(os.path.dirname(__file__), "eval_cases.json")
-    cases = load_cases(cases_path)
-    print(f"[初始化] 加载 {len(cases)} 个测试用例\n")
-
-    # 批量评估
-    results = []
-    for case in cases:
-        print(f"🧪 测试 {case['id']}: {case.get('name', '')} ... ", end="")
-        result = evaluate(agent, case)
-        results.append(result)
-
-        if "error" in result:
-            print(f"❌ {result['error']}")
-        else:
-            scores = result.get("scores", {})
-            route_acc = scores.get("route_acc", "N/A")
-            hallu = scores.get("hallucination", "N/A")
-            print(f"✅ 路由:{route_acc} 幻觉:{hallu} 轮次:{result.get('turns', '?')}")
-
-    # 汇总
-    print("\n" + "=" * 60)
-    print("📊 评估汇总")
-    print("=" * 60)
-
-    valid_results = [r for r in results if "error" not in r and r.get("scores")]
-    if valid_results:
-        route_accs = [r["scores"].get("route_acc", 0) for r in valid_results]
-        hallu_rates = [r["scores"].get("hallucination", 0) for r in valid_results]
-        keyword_covs = [r["scores"].get("keyword_coverage", 0) for r in valid_results]
-        turns = [r.get("turns", 0) for r in valid_results]
-
-        print(f"测试用例数    : {len(results)}")
-        print(f"有效结果数    : {len(valid_results)}")
-        print(f"路由准确率    : {sum(route_accs)/len(route_accs):.1%}" if route_accs else "路由准确率: N/A")
-        print(f"幻觉控制率    : {sum(hallu_rates)/len(hallu_rates):.1%}" if hallu_rates else "幻觉控制率: N/A")
-        print(f"关键词覆盖    : {sum(keyword_covs)/len(keyword_covs):.1%}" if keyword_covs else "关键词覆盖: N/A")
-        print(f"平均轮次      : {sum(turns)/len(turns):.1f}" if turns else "平均轮次: N/A")
-
-    print("\n✅ 评估完成")
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cases", type=Path, default=Path(__file__).with_name("eval_cases.json"))
+    parser.add_argument("--output", type=Path)
+    args = parser.parse_args()
+    results = [evaluate_case(case) for case in load_cases(args.cases)]
+    passed = sum(item["passed"] for item in results)
+    summary = {"total": len(results), "passed": passed, "failed": len(results) - passed, "results": results}
+    text = json.dumps(summary, ensure_ascii=False, indent=2)
+    print(text)
+    if args.output:
+        args.output.write_text(text, encoding="utf-8")
+    return 0 if passed == len(results) else 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

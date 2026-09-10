@@ -1,0 +1,26 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: industry_research_agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: industry_research_agent/requirements.txt
+      - run: pip install -r requirements.txt
+      - run: python scripts/check_agents.py
+      - run: pytest -q
+      - run: python -m eval.eval_harness
+      - run: python -m eval.reliability_harness
+      - run: python -m eval.skill_harness
+      - run: python -m eval.routing_eval

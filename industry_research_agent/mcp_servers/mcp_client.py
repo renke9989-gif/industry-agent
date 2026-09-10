@@ -78,7 +78,9 @@ class McpToolManager:
         2. Python 脚本：server_script_path="xxx.py" → python xxx.py
         3. 任意命令：command="npx", args=["-y","bing-cn-mcp"] → npx -y bing-cn-mcp
         """
-        python_path = os.getenv("MCP_PYTHON_PATH", "python")
+        # Reuse the current interpreter (typically the project's Python 3.11
+        # venv) so MCP subprocesses do not accidentally start Conda Python 3.8.
+        python_path = os.getenv("MCP_PYTHON_PATH", sys.executable)
 
         if command:
             # 通用命令启动（如 npx）
@@ -345,6 +347,22 @@ def load_tavily_search_tools() -> List[BaseTool]:
     return manager.get_tools()
 
 
+def load_web_research_tools() -> List[BaseTool]:
+    """Load the project's unified ``search`` + ``fetch_page`` MCP tools."""
+    server_path = os.path.join(os.path.dirname(__file__), "tavily_search_server.py")
+    env = {
+        "TAVILY_API_KEY": os.getenv("TAVILY_API_KEY", ""),
+        "PYTHONPATH": os.path.dirname(os.path.dirname(__file__)),
+    }
+    # stdio MCP receives an explicit environment instead of inheriting the
+    # parent process. Forward proxy variables or the child may report a
+    # misleading connection failure even though the host can reach Tavily.
+    for proxy_var in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy", "NO_PROXY", "no_proxy"):
+        if os.getenv(proxy_var):
+            env[proxy_var] = os.getenv(proxy_var)
+    return load_mcp_tools_sync(server_script_path=server_path, env=env)
+
+
 # ============================================================
 # 兼容旧接口：同步加载自研 MCP Server（一次性连接，用完即关）
 # ============================================================
@@ -355,47 +373,12 @@ async def load_mcp_tools(
     env: Optional[dict] = None,
 ) -> List[BaseTool]:
     """
-    连接一个 MCP Server 并加载其提供的所有工具（一次性连接）。
-    注意：此函数返回后连接会关闭，仅适合"加载工具后立即在同一个 async 上下文内使用"的场景。
-    对于需要长期复用的工具，请使用 McpToolManager（常驻连接）。
+    连接一个 MCP Server 并加载其提供的所有工具（常驻连接，连接不关闭）。
+
+    注意：原实现用 async with 一次性连接，session 在返回后即被关闭，
+    后续调用工具会报 ClosedResourceError（"工具调用失败"）——已改为复用常驻连接。
     """
-    python_path = os.getenv("MCP_PYTHON_PATH", "python")
-
-    if module_name:
-        args = ["-m", module_name]
-    elif server_script_path:
-        args = [server_script_path]
-    else:
-        raise ValueError("必须提供 server_script_path 或 module_name 之一")
-
-    server_params = StdioServerParameters(command=python_path, args=args, env=env or {})
-    tools = []
-
-    async with stdio_client(server_params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            mcp_tools = await session.list_tools()
-
-            for tool in mcp_tools.tools:
-                def _make_call_tool(tool_name: str):
-                    async def _call_tool(**kwargs):
-                        result = await session.call_tool(tool_name, arguments=kwargs)
-                        texts = []
-                        for content in result.content:
-                            if hasattr(content, "text"):
-                                texts.append(content.text)
-                        return "\n".join(texts) if texts else str(result.content)
-                    return _call_tool
-
-                langchain_tool = StructuredTool.from_function(
-                    name=tool.name,
-                    description=tool.description or f"MCP tool: {tool.name}",
-                    coroutine=_make_call_tool(tool.name),
-                    args_schema=_MCP_CATCH_ALL_SCHEMA,
-                )
-                tools.append(langchain_tool)
-
-    return tools
+    return load_mcp_tools_sync(server_script_path=server_script_path, module_name=module_name, env=env)
 
 
 def load_mcp_tools_sync(
@@ -403,5 +386,12 @@ def load_mcp_tools_sync(
     module_name: Optional[str] = None,
     env: Optional[dict] = None,
 ) -> List[BaseTool]:
-    """同步包装器"""
-    return asyncio.run(load_mcp_tools(server_script_path, module_name, env))
+    """同步加载 MCP 工具（常驻连接，连接不关闭）。"""
+    manager = McpToolManager()
+    if module_name:
+        manager.connect(module_name=module_name, env=env)
+    elif server_script_path:
+        manager.connect(server_script_path=server_script_path, env=env)
+    else:
+        raise ValueError("必须提供 server_script_path 或 module_name 之一")
+    return manager.get_tools()

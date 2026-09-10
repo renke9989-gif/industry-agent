@@ -1,0 +1,27 @@
+{
+  "coffee_hangzhou": {
+    "decision_goal": "判断50万元预算是否值得投入，并确定最低成本验证方式",
+    "target_customer": "杭州写字楼周边的年轻上班族",
+    "resources": "本人全职参与，但没有成熟私域流量",
+    "business_form": "先做小店和外卖，不加盟",
+    "success": "三个月获得稳定复购，六个月现金流不持续恶化"
+  },
+  "pet_bakery": {
+    "decision_goal": "验证宠物烘焙是否有真实付费需求",
+    "target_customer": "有精细化养宠需求的中高端用户",
+    "resources": "有宠物社群，没有食品生产经验",
+    "success": "三个月获得50名复购客户"
+  },
+  "ai_education": {
+    "decision_goal": "选择可收费且合规的AI教育产品模式",
+    "target_customer": "中小型培训机构",
+    "resources": "有软件开发能力，没有教培渠道",
+    "success": "获得3家机构付费试点"
+  },
+  "catering": {
+    "decision_goal": "判断50万元是否适合投入餐饮项目",
+    "target_customer": "工作日午餐用户",
+    "resources": "本人没有餐饮经验，计划招聘店长",
+    "success": "六个月达到单店现金流为正"
+  }
+}

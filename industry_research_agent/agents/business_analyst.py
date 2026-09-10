@@ -1,83 +1,104 @@
-"""
-Agent 节点：商业模式分析师 (Business Model Analyst)
-"""
-import os
-import json
-from langchain_core.messages import AIMessage, ToolMessage, HumanMessage, SystemMessage
-from langchain_openai import ChatOpenAI
+"""Business model analyst with explicit assumptions and evidence-backed benchmarks."""
+from __future__ import annotations
+import re
+
+from langchain_core.messages import AIMessage, HumanMessage
 
 from state import ResearchState
 from tools.roi_calculator import calculate_roi
 
-BUSINESS_TOOLS = [calculate_roi]
+from .web_research import research_dimensions
 
-llm = ChatOpenAI(
-    model=os.getenv("LLM_MODEL", "deepseek-chat"),
-    api_key=os.getenv("LLM_API_KEY", ""),
-    base_url=os.getenv("LLM_BASE_URL", "https://api.deepseek.com/v1"),
-    temperature=0.2,
-)
 
-SYSTEM_PROMPT = """你是商业模式与财务测算专家，负责评估赛道的赚钱逻辑，极其理性。
+REQUIRED_BUSINESS_TERMS = {
+    "客单价": ("客单价", "单价"),
+    "月销量": ("月销量", "每月", "每天", "日均"),
+    "成本或毛利率": ("成本", "毛利", "费用", "租金"),
+}
 
-你必须遵守以下规则：
-1. 当市场或竞争分析师提出进入某赛道的建议时，必须调用 calculate_roi 测算投入产出
-2. ROI < 1.5 → 直接反对并给出理由
-3. ROI 1.0-1.5 → 谨慎建议，列出风险
-4. ROI ≥ 1.5 → 可以推荐，但也要指出投入风险
-5. 追问商业模式相关数据：客单价？毛利率？获客成本？回本周期？
 
-你负责的调研维度：商业模式（盈利模式、成本结构、客单价）、投资回报
-你的个性：理性、抠细节、只相信数字、绝不做亏本买卖
-"""
+def _latest_user_text(state: ResearchState) -> str:
+    for message in reversed(state.get("messages", [])):
+        if isinstance(message, HumanMessage):
+            return str(message.content)
+    return ""
+
+
+def _missing_terms(text: str) -> list[str]:
+    return [name for name, terms in REQUIRED_BUSINESS_TERMS.items() if not any(term in text for term in terms)]
 
 
 def business_analyst_node(state: ResearchState) -> dict:
-    """商业模式分析师节点"""
-    all_messages = list(state.get("messages", []))
-    clean_messages = []
-    for msg in all_messages:
-        if isinstance(msg, ToolMessage):
-            continue
-        if isinstance(msg, AIMessage) and hasattr(msg, "tool_calls") and msg.tool_calls:
-            continue
-        clean_messages.append(msg)
+    user_text = " ".join(
+        str(message.content) for message in state.get("messages", []) if isinstance(message, HumanMessage)
+    )
+    missing = _missing_terms(user_text)
+    stage = state.get("business_stage", "unknown")
+    intent = state.get("user_intent", "entry_feasibility")
+    use_scenarios = state.get("assumption_mode", False) or stage in ("pre_launch", "planning")
 
-    messages = [SystemMessage(content=SYSTEM_PROMPT)] + clean_messages
+    # Public benchmarks can be researched, but user-specific ROI is never fabricated.
+    result = research_dimensions(
+        state,
+        analyst_name="商业模式分析师",
+        dimensions=("商业模式",),
+        role_instruction=(
+            "你是商业模式分析师，负责公开可查的毛利率、成本结构、客单价和盈利方式。"
+            "若用户处于筹备期，使用公开行业基准构建保守、中性、乐观三种情景；"
+            "明确标注这些是假设，不得当作用户真实经营数据。"
+            "只有用户明确要求计算已运营项目的实际 ROI 时，才使用用户经营参数。"
+        ),
+        max_tool_calls=4,
+    )
 
-    llm_with_tools = llm.bind_tools(BUSINESS_TOOLS)
-    response = llm_with_tools.invoke(messages)
-
-    tool_calls = getattr(response, "tool_calls", []) or []
-    tool_results = []
-
-    for tc in tool_calls:
-        tool_name = tc.get("name", "")
-        args = tc.get("args", {})
-        if tool_name == "calculate_roi":
-            result = calculate_roi.invoke(args)
-        else:
-            result = {"error": f"未知工具: {tool_name}"}
-        tool_results.append(
-            ToolMessage(content=json.dumps(result, ensure_ascii=False), tool_call_id=tc.get("id", ""))
+    if use_scenarios:
+        scenario_message = (
+            "你目前处于筹备阶段，我不会要求你提供尚不存在的真实客单价、销量或毛利率。"
+            "我会基于联网获取的行业基准，按保守、中性、乐观三种情景估算商业可行性；"
+            "报告会把公开事实与测算假设分开标注。"
         )
+        assumptions = list(state.get("assumptions", []))
+        assumptions.extend([
+            {"name": "客单价", "source": "行业公开基准", "type": "scenario_assumption"},
+            {"name": "订单量", "source": "地区与店型基准", "type": "scenario_assumption"},
+            {"name": "毛利率", "source": "行业公开基准", "type": "scenario_assumption"},
+        ])
+        result["messages"] = list(result.get("messages", [])) + [AIMessage(content=scenario_message)]
+        result["assumptions"] = assumptions
+        return result
 
-    if tool_results:
-        reflect_messages = messages + [response] + tool_results
-        final_response = llm.invoke(reflect_messages)
-        return {
-            "messages": [response] + tool_results + [final_response],
-            "analyst_opinions": {
-                **state.get("analyst_opinions", {}),
-                "商业模式分析师": final_response.content[:1000]
-            }
-        }
+    if intent == "roi_calculation" and stage == "operating" and missing:
+        question = "为了测算你正在运营项目的实际 ROI，请补充：" + "、".join(missing) + "。"
+        opinions = dict(result.get("analyst_opinions", {}))
+        opinions["商业模式分析师"] = opinions.get("商业模式分析师", "") + "\n\n" + question
+        missing_markers = [f"business:{name}" for name in missing]
+        result.update({
+            "messages": list(result.get("messages", [])) + [AIMessage(content=question)],
+            "analyst_opinions": opinions,
+            "awaiting_user": True,
+            "pending_question": question,
+            "missing_information": missing_markers,
+        })
+        status = dict(result.get("dimension_status", {}))
+        status["商业模式"] = "insufficient"
+        result["dimension_status"] = status
+        return result
 
-    # 即使没有工具调用也保存意见，避免 Supervisor 打分卡死、报告缺数据
-    return {
-        "messages": [response],
-        "analyst_opinions": {
-            **state.get("analyst_opinions", {}),
-            "商业模式分析师": response.content[:1000]
-        },
-    }
+    # Only calculate when two explicit numeric inputs are discoverable. The report
+    # keeps the inputs alongside the formula so assumptions stay reviewable.
+    numbers = [float(value) for value in re.findall(r"\d+(?:\.\d+)?", user_text)]
+    if intent == "roi_calculation" and stage == "operating" and len(numbers) >= 2 and state.get("budget") not in (None, "", "未知"):
+        investment_match = re.search(r"(\d+(?:\.\d+)?)\s*万", str(state.get("budget")))
+        investment = float(investment_match.group(1)) if investment_match else numbers[0]
+        annual_benefit = numbers[-1]
+        roi = calculate_roi.invoke({"investment": investment, "annual_benefit": annual_benefit})
+        explanation = (
+            f"\n\nROI 试算（仅基于用户参数）：投入={investment}万元，"
+            f"年收益={annual_benefit}万元；ROI=年收益/投入={roi['roi']}，"
+            f"预计回本={roi['payback_years']}年。"
+        )
+        opinions = dict(result.get("analyst_opinions", {}))
+        opinions["商业模式分析师"] = opinions.get("商业模式分析师", "") + explanation
+        result["analyst_opinions"] = opinions
+        result["messages"] = list(result.get("messages", [])) + [AIMessage(content=explanation.strip())]
+    return result

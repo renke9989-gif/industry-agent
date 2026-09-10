@@ -1,6 +1,9 @@
-"""一键环境检查"""
-import os, sys
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", "industrial_diagnosis_agent"))
-from scripts.agent_tools import check_environment
-import json
-print(json.dumps(check_environment(), indent=2, ensure_ascii=False))
+"""Run the current project consistency check from the repository root."""
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path(__file__).resolve().parents[4]
+python = root / "industry_research_agent" / ".venv" / "Scripts" / "python.exe"
+command = [str(python if python.exists() else sys.executable), "industry_research_agent/scripts/check_agents.py"]
+raise SystemExit(subprocess.call(command, cwd=root))

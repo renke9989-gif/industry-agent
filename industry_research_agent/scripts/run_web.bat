@@ -11,5 +11,5 @@ echo   启动后请在浏览器打开: http://localhost:8000
 echo   停止服务请按 Ctrl+C
 echo ============================================================
 echo.
-python web_server.py
+if exist .venv\Scripts\python.exe (.venv\Scripts\python.exe web_server.py) else (python web_server.py)
 pause

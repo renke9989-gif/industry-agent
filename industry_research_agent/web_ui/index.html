@@ -6,13 +6,13 @@
     <title>行业调研智能体 · 多智能体协作版</title>
     <style>
         :root {
-            --bg: #f7f8fa;
-            --sidebar-bg: #1e1e2e;
+            --bg: #f4f6f5;
+            --sidebar-bg: #142621;
             --text: #1f2937;
             --text-light: #6b7280;
             --border: #e5e7eb;
-            --accent: #6366f1;
-            --user-bubble: #6366f1;
+            --accent: #19735a;
+            --user-bubble: #19735a;
             --card: #ffffff;
         }
 
@@ -40,7 +40,16 @@
             flex-direction: column;
             padding: 20px;
             flex-shrink: 0;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,.22) transparent;
         }
+
+        .sidebar::-webkit-scrollbar { width: 6px; }
+        .sidebar::-webkit-scrollbar-track { background: transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.22); border-radius: 99px; }
 
         .sidebar .logo {
             font-size: 20px;
@@ -109,6 +118,21 @@
             color: #fff;
         }
 
+        .dim-status.insufficient {
+            background: #b45309;
+            color: #fff;
+        }
+
+        .progress-help {
+            margin-top: 10px;
+            padding: 9px 10px;
+            border-radius: 9px;
+            background: rgba(255,255,255,.06);
+            color: #9fb8ae;
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
         .sidebar .agents-box {
             background: rgba(255, 255, 255, 0.06);
             border-radius: 12px;
@@ -150,11 +174,24 @@
         }
 
         .sidebar .footer {
-            margin-top: auto;
+            margin-top: 20px;
             font-size: 11px;
             color: #6b7280;
             text-align: center;
+            padding-bottom: 4px;
         }
+
+        .study-context {
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 18px;
+        }
+        .context-label { color: #8fa69f; font-size: 11px; margin-bottom: 4px; }
+        .context-value { color: #f3f7f5; font-size: 13px; line-height: 1.5; margin-bottom: 9px; }
+        .context-skill { display: inline-flex; padding: 4px 8px; background: rgba(64, 190, 144, .18); color: #b8f2d9; border-radius: 7px; font-size: 12px; font-weight: 700; }
+        .context-value:last-child { margin-bottom: 0; }
 
         /* ============ 主区域 ============ */
         .main {
@@ -163,6 +200,30 @@
             flex-direction: column;
             min-width: 0;
         }
+
+        .evidence-panel {
+            width: 330px;
+            flex-shrink: 0;
+            background: #fbfcfb;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .evidence-header { padding: 18px; border-bottom: 1px solid var(--border); }
+        .evidence-header h2 { font-size: 15px; margin-bottom: 4px; }
+        .evidence-header p { font-size: 12px; color: var(--text-light); }
+        .evidence-list { padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .evidence-empty { color: var(--text-light); font-size: 13px; line-height: 1.6; padding: 14px; }
+        .evidence-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+        .evidence-card-top { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 7px; }
+        .evidence-id { color: var(--accent); font-weight: 700; font-size: 12px; }
+        .evidence-kind { color: var(--text-light); font-size: 11px; }
+        .evidence-title { font-size: 13px; font-weight: 650; line-height: 1.45; margin-bottom: 6px; }
+        .evidence-excerpt { color: #5c6864; font-size: 12px; line-height: 1.55; max-height: 74px; overflow: hidden; }
+        .evidence-link { display: inline-block; margin-top: 8px; color: var(--accent); font-size: 12px; text-decoration: none; }
+        .evidence-meta { margin-top: 6px; color: var(--text-light); font-size: 11px; line-height: 1.5; }
+        .evidence-conflict { margin: 0 12px 10px; padding: 9px 10px; border-radius: 9px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 11px; line-height: 1.5; }
 
         .main-header {
             background: var(--card);
@@ -193,6 +254,96 @@
             background: #f3f4f6;
             color: var(--text);
         }
+
+        .main-header-actions { display: flex; gap: 10px; }
+        .composer-tools { display: flex; align-items: center; gap: 8px; margin: 4px 0 2px; }
+        .composer-tool-btn { position: relative; flex: 0 0 28px; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: transparent; color: #52635d; border-radius: 0; padding: 0; cursor: pointer; font-size: 24px; font-weight: 300; line-height: 1; }
+        .composer-tool-btn:hover { border-color: #8fcfba; color: #187b5f; }
+        .composer-tool-hint { display: none; position: absolute; left: 0; bottom: calc(100% + 8px); z-index: 20; white-space: nowrap; color: #fff; background: #26352f; border-radius: 6px; padding: 6px 9px; font-size: 11px; box-shadow: 0 4px 12px rgba(0,0,0,.15); }
+        .composer-tool-btn:hover .composer-tool-hint, .composer-tool-btn:focus-visible .composer-tool-hint { display: block; }
+        .download-btn {
+            background: #10b981; border: 0; color: #fff; border-radius: 8px;
+            padding: 6px 14px; font-size: 13px; cursor: pointer;
+        }
+        .download-btn:disabled { opacity: .45; cursor: not-allowed; }
+        .memory-btn { background: #fff; border: 1px solid var(--border); color: #52635d; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+        .history-btn { background: #fff; border: 1px solid var(--border); color: #52635d; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+        .history-btn:hover, .memory-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .session-list { display: grid; gap: 9px; max-height: 440px; overflow-y: auto; margin: 14px 0; }
+        .session-empty { padding: 18px; color: var(--text-light); text-align: center; border: 1px dashed var(--border); border-radius: 12px; }
+        .session-item { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 14px; padding: 13px 15px; text-align: left; background: #f7fbf9; border: 1px solid var(--border); border-radius: 12px; cursor: pointer; color: var(--text); }
+        .session-item:hover { border-color: var(--primary); background: #eff9f4; }
+        .session-item.active { border-color: var(--primary); box-shadow: inset 3px 0 var(--primary); }
+        .session-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+        .session-time { color: var(--text-light); font-size: 12px; white-space: nowrap; }
+        .session-id { grid-column: 1 / -1; color: var(--text-light); font-size: 11px; }
+        .memory-dialog { border: 0; border-radius: 16px; width: min(520px, calc(100% - 32px)); padding: 0; box-shadow: 0 24px 70px rgba(15,23,42,.22); }
+        .memory-dialog::backdrop { background: rgba(15,23,42,.36); }
+        .memory-dialog-body { padding: 22px; }
+        .memory-dialog h2 { font-size: 18px; margin-bottom: 6px; }
+        .memory-dialog p { color: var(--text-light); font-size: 12px; line-height: 1.6; margin-bottom: 14px; }
+        .memory-facts { display: grid; gap: 7px; margin-bottom: 14px; }
+        .memory-fact { padding: 9px 11px; background: #f6faf8; border: 1px solid #dce9e2; border-radius: 9px; font-size: 13px; }
+        .memory-form { display: grid; grid-template-columns: 1fr 1.5fr auto; gap: 7px; }
+        .memory-form input { min-width: 0; border: 1px solid var(--border); border-radius: 8px; padding: 9px; font: inherit; }
+        .memory-actions { display: flex; justify-content: space-between; gap: 8px; margin-top: 16px; }
+        .confirmation-actions {
+            display: flex; gap: 10px; margin: 0 0 4px 48px; flex-wrap: wrap;
+        }
+        .confirm-btn {
+            border: 1px solid var(--accent); border-radius: 10px; padding: 9px 16px;
+            font: inherit; font-size: 13px; cursor: pointer; transition: transform .15s, box-shadow .15s;
+        }
+        .confirm-btn:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(15, 23, 42, .1); }
+        .confirm-btn.primary { background: var(--accent); color: #fff; }
+        .confirm-btn.secondary { background: #fff; color: var(--accent); }
+        .questionnaire-card {
+            width: min(680px, calc(100% - 48px)); margin-left: 48px; background: #fff;
+            border: 1px solid #d8e5df; border-radius: 16px; padding: 18px;
+            box-shadow: 0 10px 30px rgba(20, 38, 33, .06);
+        }
+        .question-progress-row { display: flex; justify-content: space-between; color: var(--text-light); font-size: 12px; }
+        .question-progress { height: 5px; background: #edf2f0; border-radius: 99px; margin: 9px 0 16px; overflow: hidden; }
+        .question-progress span { display: block; height: 100%; background: var(--accent); border-radius: inherit; }
+        .question-topic { color: var(--accent); font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+        .questionnaire-card h3 { font-size: 17px; line-height: 1.5; margin-bottom: 7px; }
+        .question-why { color: var(--text-light); font-size: 12px; line-height: 1.55; margin-bottom: 14px; }
+        .question-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+        .custom-option { grid-column: 1 / -1; }
+        .custom-answer { display: none; grid-column: 1 / -1; gap: 8px; }
+        .custom-answer.show { display: flex; }
+        .custom-answer input { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; font: inherit; }
+        .custom-answer button { border: 0; border-radius: 9px; padding: 0 16px; background: var(--accent); color: #fff; cursor: pointer; font: inherit; }
+        .option-btn { text-align: left; background: #f7faf8; border: 1px solid #dce8e3; border-radius: 10px; padding: 10px 12px; color: #263a34; cursor: pointer; font: inherit; font-size: 13px; }
+        .option-btn:hover { border-color: var(--accent); background: #eef7f3; }
+        .option-btn.recommended { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+        .option-btn.recommended:hover { background: #126d56; }
+        .consent-card { border-color: #b9d9cc; background: linear-gradient(180deg, #ffffff 0%, #f7fbf9 100%); }
+        .question-skip { margin-top: 9px; border: 0; background: transparent; color: var(--text-light); cursor: pointer; font-size: 12px; }
+        /* 报告使用普通文本渲染，聊天区域负责滚动，不再在报告卡片内截断内容。 */
+        .report-preview { max-height: none; overflow: visible; }
+        .report-shell { width: min(920px, 100%); }
+        .report-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid #d7eee0; }
+        .report-toolbar-title { color: #14532d; font-size: 16px; font-weight: 700; }
+        .report-toolbar-note { color: #5f7669; font-size: 12px; }
+        .report-highlight { background: #ffffff; border: 1px solid #ccebd7; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+        .report-highlight-label { color: #15803d; font-size: 12px; font-weight: 700; margin-bottom: 7px; }
+        .report-highlight-text { color: #183b2b; font-size: 15px; line-height: 1.75; white-space: pre-wrap; }
+        .report-content { color: #1f2937; font-size: 14px; line-height: 1.85; white-space: pre-wrap; }
+        .report-content a, .report-highlight-text a { color: #087443; font-weight: 700; text-decoration: none; border-bottom: 1px solid #8bd5ae; cursor: pointer; }
+        .report-content a:hover, .report-highlight-text a:hover { color: #064e3b; border-bottom-color: #064e3b; background: #e8f7ee; }
+        .report-section { margin: 24px 0 0; }
+        .report-section-title { color: #123c2f; font-size: 17px; font-weight: 800; padding: 0 0 9px 11px; border-left: 4px solid #22c55e; border-bottom: 1px solid #e2eee7; margin-bottom: 11px; letter-spacing: .02em; }
+        .report-section-body { white-space: pre-wrap; }
+        .report-points { display: grid; gap: 11px; }
+        .report-point { display: grid; grid-template-columns: 30px minmax(0,1fr); gap: 10px; align-items: start; padding: 13px 14px; border-radius: 11px; background: #f8faf9; border: 1px solid #dce8e2; white-space: normal; }
+        .report-point-number { width: 27px; height: 27px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #dcfce7; color: #166534; font-size: 13px; font-weight: 800; }
+        .report-point-content { min-width: 0; white-space: pre-wrap; }
+        .report-point-title { color: #1f3d32; font-weight: 750; }
+        .report-point-detail { display: block; margin-top: 4px; color: #4b6258; }
+        .report-source-note { margin-top: 18px; border-top: 1px solid #d7eee0; padding-top: 11px; color: #5f7669; font-size: 12px; line-height: 1.6; }
+        .user-condition-chip { display: inline-flex; align-items: center; margin: 0 2px; padding: 1px 6px; border-radius: 7px; background: #e8f5ef; color: #0f6b50; font-size: .78em; font-weight: 750; cursor: help; vertical-align: middle; }
+        .report-status { margin-bottom: 12px; padding: 10px 12px; border-radius: 10px; background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; font-size: 13px; line-height: 1.6; }
 
         /* ============ 聊天区 ============ */
         .chat-area {
@@ -276,6 +427,21 @@
             border-bottom-left-radius: 4px;
         }
 
+        .analyst-view { min-width: min(620px, 100%); }
+        .analyst-conclusion { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 15px; padding: 11px 13px; border-radius: 10px; background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-weight: 650; }
+        .analyst-conclusion-label { flex: 0 0 auto; color: #15803d; font-size: 12px; font-weight: 750; }
+        .analyst-reason { margin: 0 0 14px; padding: 11px 13px; background: #f8fafc; border-left: 3px solid #94a3b8; color: #334155; white-space: pre-wrap; }
+        .analyst-findings { display: grid; gap: 9px; margin-top: 8px; }
+        .analyst-finding { padding: 10px 12px; background: #fff; border: 1px solid #e2e8f0; border-radius: 9px; white-space: pre-wrap; }
+        .analyst-finding-label { display: block; color: #475569; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+        .analyst-rest { margin-top: 12px; white-space: pre-wrap; }
+        .evidence-chip { display: inline-flex; align-items: center; margin-left: 3px; padding: 1px 5px; border: 0; border-radius: 5px; background: #e8f3ff; color: #2563eb; font: inherit; font-size: 11px; font-weight: 700; line-height: 1.35; vertical-align: 1px; cursor: pointer; }
+        .evidence-chip:hover { background: #dbeafe; color: #1d4ed8; }
+        .evidence-card:target, .evidence-card.highlighted { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.13); }
+        .analyst-details { margin-top: 14px; border-top: 1px solid #e5e7eb; padding-top: 10px; }
+        .analyst-details summary { color: #64748b; cursor: pointer; font-size: 12px; }
+        .analyst-details-body { margin-top: 8px; color: #64748b; font-size: 13px; line-height: 1.7; white-space: pre-wrap; }
+
         /* 监督者消息 */
         .message.supervisor .bubble {
             background: #eef2ff;
@@ -285,14 +451,23 @@
         }
 
         /* 报告消息 */
-        .message.report .bubble {
-            background: #f0fdf4;
-            border: 1px solid #86efac;
-            white-space: pre-wrap;
+        .message.report {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .message.report .body {
+            width: min(960px, calc(100% - 48px));
         }
 
         .message.report .bubble {
+            background: linear-gradient(180deg, #f4fdf7 0%, #ffffff 100%);
+            border: 1px solid #a7e3bc;
+            border-radius: 16px;
+            padding: 20px 22px;
+            white-space: normal;
             max-width: 100%;
+            box-shadow: 0 12px 34px rgba(20, 83, 45, .08);
         }
 
         /* 思考过程（折叠区，类似 DeepSeek） */
@@ -356,7 +531,22 @@
             display: flex;
             gap: 12px;
             align-items: flex-end;
+            flex-wrap: wrap;
         }
+
+        .runtime-status {
+            width: 100%; display: flex; align-items: center; gap: 10px;
+            min-height: 38px; padding: 8px 12px; border: 1px solid #cfe3da;
+            border-radius: 11px; background: #f4faf7; color: #36574c;
+            font-size: 13px; transition: opacity .2s, transform .2s;
+        }
+        .runtime-status[hidden] { display: none; }
+        .runtime-status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; animation: statusPulse 1.2s ease-in-out infinite; }
+        .runtime-status-spinner { width: 16px; height: 16px; border: 2px solid #b9d9cc; border-top-color: var(--accent); border-radius: 50%; animation: statusSpin .8s linear infinite; flex: 0 0 auto; }
+        .runtime-status-text { font-weight: 650; }
+        .runtime-status-time { margin-left: auto; color: var(--text-light); font-variant-numeric: tabular-nums; font-size: 12px; }
+        @keyframes statusSpin { to { transform: rotate(360deg); } }
+        @keyframes statusPulse { 0%, 100% { opacity: .35; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.15); } }
 
         .input-area textarea {
             flex: 1;
@@ -391,8 +581,11 @@
         }
 
         .input-area .send-btn:hover {
-            background: #4f46e5;
+            background: #125c47;
         }
+
+        .input-area .send-btn.stop-mode { background: #b42318; min-width: 128px; box-shadow: 0 6px 18px rgba(180, 35, 24, .2); }
+        .input-area .send-btn.stop-mode:hover { background: #8f1d14; }
 
         .input-area .send-btn:disabled {
             background: #c7d2fe;
@@ -468,6 +661,32 @@
             font-size: 15px;
             line-height: 1.6;
         }
+
+        @media (max-width: 1180px) {
+            .evidence-panel { display: none; }
+        }
+        @media (max-width: 760px) {
+            .sidebar { display: none; }
+            .chat-area { padding: 16px; }
+            .message { max-width: 96%; }
+            .main-header { padding: 12px 16px; }
+            .input-area { padding: 12px 16px; }
+            .download-btn { display: none; }
+            .questionnaire-card { width: 100%; margin-left: 0; }
+            .question-options { grid-template-columns: 1fr; }
+        }
+        @media (max-height: 760px) and (min-width: 761px) {
+            .sidebar { padding: 14px 16px; }
+            .sidebar .subtitle { margin-bottom: 14px; }
+            .study-context { margin-bottom: 12px; padding: 10px; }
+            .sidebar .progress-box, .sidebar .agents-box { padding: 10px 12px; }
+            .dim-item, .agent-item { padding: 4px 0; }
+            .progress-help { margin-top: 7px; padding: 7px 8px; }
+            .sidebar .section-title { margin-bottom: 8px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+        }
     </style>
 </head>
 <body>
@@ -478,9 +697,19 @@
             <span class="icon">🔍</span>
             <span>行业调研智能体</span>
         </div>
-        <div class="subtitle">Multi-Agent Industry Research</div>
+        <div class="subtitle">多智能体行业调研系统</div>
 
-        <div class="section-title">调研进度</div>
+        <div class="study-context">
+            <div class="context-label">当前场景</div>
+            <div class="context-value" id="context-scenario">等待识别</div>
+            <div class="context-label">决策目标</div>
+            <div class="context-value" id="context-goal">先告诉我你要解决的问题</div>
+            <div class="context-label">执行 Skill</div>
+            <div class="context-skill" id="context-skill">等待路由</div>
+            <div class="context-metrics" id="context-metrics"></div>
+        </div>
+
+        <div class="section-title" title="4/5 表示证据覆盖度，不是准确率或完成百分比">调研进度（证据覆盖度）</div>
         <div class="progress-box" id="progress-box">
             <div class="dim-item"><span class="dim-name">市场规模</span><span class="dim-status pending" id="dim-市场">待调研</span></div>
             <div class="dim-item"><span class="dim-name">竞争格局</span><span class="dim-status pending" id="dim-竞争">待调研</span></div>
@@ -488,6 +717,7 @@
             <div class="dim-item"><span class="dim-name">市场机会</span><span class="dim-status pending" id="dim-机会">待调研</span></div>
             <div class="dim-item"><span class="dim-name">进入风险</span><span class="dim-status pending" id="dim-风险">待调研</span></div>
             <div class="dim-item"><span class="dim-name">发展趋势</span><span class="dim-status pending" id="dim-趋势">待调研</span></div>
+            <div class="progress-help" id="progress-help">状态说明：4/5 表示证据覆盖度；“未纳入本次调研”表示当前问题不需要研究该维度，并非调研失败。</div>
         </div>
 
         <div class="section-title">智能体团队</div>
@@ -498,41 +728,213 @@
             <div class="agent-item" id="agent-business_analyst"><span class="dot"></span>💰 商业模式分析师</div>
         </div>
 
-        <div class="footer">基于 LangGraph 多智能体架构</div>
+        <div class="footer">基于多智能体协作架构</div>
     </div>
 
     <!-- ============ 主区域 ============ -->
     <div class="main">
         <div class="main-header">
             <div class="title">行业调研对话</div>
-            <button class="reset-btn" id="reset-btn">🔄 重新调研</button>
+            <div class="main-header-actions">
+                <button class="history-btn" id="history-btn">🕘 历史对话</button>
+                <button class="memory-btn" id="memory-btn">🧠 记忆设置</button>
+                <button class="download-btn" id="download-btn" disabled hidden>⬇ 下载报告</button>
+                <button class="reset-btn" id="reset-btn">🔄 重新调研</button>
+            </div>
         </div>
 
         <div class="chat-area" id="chat-area">
             <!-- 欢迎界面 -->
             <div class="welcome" id="welcome">
                 <div class="big-icon">🔍</div>
-                <h1>想调研什么行业？</h1>
-                <p>告诉我你想进入的赛道或想做的生意，我会调度市场分析师、竞争分析师和商业模式分析师，为你输出一份完整的行业调研报告。</p>
+                <h1>你正在做什么决定？</h1>
+                <p>先通过问卷式访谈了解你的现状、资源和约束，再进行针对性联网研究。结论会随你的条件变化，而不是套用通用报告。</p>
                 <div class="examples">
-                    <div class="example-chip" onclick="sendExample(this.textContent)">我想在二线城市开一家宠物烘焙店，预算30万</div>
-                    <div class="example-chip" onclick="sendExample(this.textContent)">咖啡赛道现在还能进吗</div>
-                    <div class="example-chip" onclick="sendExample(this.textContent)">二手奢侈品电商的利润率大概多少</div>
+                    <div class="example-chip" onclick="sendExample(this.textContent)">我想在二线城市开一家宠物店，预算30万，还没开始</div>
+                    <div class="example-chip" onclick="sendExample(this.textContent)">我的门店最近利润下降，想找出原因</div>
+                    <div class="example-chip" onclick="sendExample(this.textContent)">工厂现有CNC设备，想增加机器人焊接产线</div>
                 </div>
             </div>
         </div>
 
         <div class="input-area">
-            <textarea id="input" placeholder="输入你想调研的行业或想做的生意..." rows="1"></textarea>
+            <div class="runtime-status" id="runtime-status" role="status" aria-live="polite" hidden>
+                <span class="runtime-status-spinner" aria-hidden="true"></span>
+                <span class="runtime-status-dot" aria-hidden="true"></span>
+                <span class="runtime-status-text" id="runtime-status-text">正在思考…</span>
+                <span class="runtime-status-time" id="runtime-status-time">0 秒</span>
+            </div>
+            <textarea id="input" placeholder="描述你正在考虑的决定、项目或经营问题…" rows="1"></textarea>
+            <div class="composer-tools">
+                <input type="file" id="private-file-input" accept=".md,.markdown,.txt,.rst,.csv,.json,.pdf" hidden>
+                <button type="button" class="composer-tool-btn" id="private-upload-btn" title="支持 PDF、Markdown、TXT、CSV、JSON" aria-label="添加附件">＋<span class="composer-tool-hint">支持 PDF、Markdown、TXT、CSV、JSON</span></button>
+            </div>
             <button class="send-btn" id="send-btn" onclick="sendMessage()">发送</button>
         </div>
     </div>
 
+    <aside class="evidence-panel" aria-label="研究证据">
+        <div class="evidence-header">
+            <h2>证据与来源</h2>
+            <p id="evidence-summary">研究开始后在这里显示来源</p>
+        </div>
+        <div class="evidence-list" id="evidence-list">
+            <div class="evidence-empty">具体事实、原文摘录和来源链接会随研究过程加入这里。</div>
+        </div>
+    </aside>
+
+    <dialog class="memory-dialog" id="memory-dialog">
+        <div class="memory-dialog-body">
+            <h2>长期记忆</h2>
+            <p>这里只保存你明确确认的稳定信息，不会自动保存聊天内容。保存后会在新会话中复用。</p>
+            <div class="memory-facts" id="memory-facts"></div>
+            <div class="memory-form">
+                <input id="memory-key" placeholder="字段，如：常用城市">
+                <input id="memory-value" placeholder="确认的信息，如：杭州">
+                <button class="confirm-btn primary" id="memory-save">确认保存</button>
+            </div>
+            <div class="memory-actions">
+                <button class="confirm-btn secondary" id="memory-clear">清空长期记忆</button>
+                <button class="confirm-btn secondary" id="memory-close">关闭</button>
+            </div>
+        </div>
+    </dialog>
+
+    <dialog class="memory-dialog" id="history-dialog">
+        <div class="memory-dialog-body">
+            <h2>历史调研</h2>
+            <p>聊天内容保存在本机 SQLite 中。选择一条记录即可恢复当时的对话、访谈进度、证据和报告。</p>
+            <div class="session-list" id="session-list"></div>
+            <div class="memory-actions">
+                <span></span>
+                <button class="confirm-btn secondary" id="history-close">关闭</button>
+            </div>
+        </div>
+    </dialog>
+
     <script>
         const chatArea = document.getElementById('chat-area');
         const input = document.getElementById('input');
+        const privateFileInput = document.getElementById('private-file-input');
+        const privateUploadBtn = document.getElementById('private-upload-btn');
+        if (privateUploadBtn && privateFileInput) {
+            privateUploadBtn.addEventListener('click', () => privateFileInput.click());
+            privateFileInput.addEventListener('change', async () => {
+                const file = privateFileInput.files && privateFileInput.files[0];
+                if (!file) return;
+                const body = new FormData(); body.append('file', file);
+                privateUploadBtn.disabled = true; privateUploadBtn.innerHTML = '…';
+                try {
+                    const response = await fetch('/api/private-documents/upload', { method: 'POST', body });
+                    const raw = await response.text();
+                    let data = {};
+                    try { data = raw ? JSON.parse(raw) : {}; } catch (_) { data = { error: raw.slice(0, 240) || '服务器返回了无效响应' }; }
+                    if (!response.ok) throw new Error(data.error || ('HTTP ' + response.status));
+                    addMessage('analyst', { icon: '📚', name: '私域知识库', color: '#0f766e',
+                        content: `已上传并完成索引：${data.uploaded.title}（${data.uploaded.chunk_count} 个文本块）\n后续研究将自动参考该资料。` });
+                } catch (e) {
+                    addMessage('analyst', { icon: '❌', name: '上传失败', color: '#ef4444', content: e.message });
+                } finally { privateUploadBtn.disabled = false; privateUploadBtn.innerHTML = '＋<span class="composer-tool-hint">支持 PDF、Markdown、TXT、CSV、JSON</span>'; privateFileInput.value = ''; }
+            });
+        }
         const sendBtn = document.getElementById('send-btn');
-        const welcome = document.getElementById('welcome');
+        const runtimeStatus = document.getElementById('runtime-status');
+        const runtimeStatusText = document.getElementById('runtime-status-text');
+        const runtimeStatusTime = document.getElementById('runtime-status-time');
+        const downloadBtn = document.getElementById('download-btn');
+        const memoryDialog = document.getElementById('memory-dialog');
+        const historyDialog = document.getElementById('history-dialog');
+        const sessionList = document.getElementById('session-list');
+        const memoryFacts = document.getElementById('memory-facts');
+        const evidenceList = document.getElementById('evidence-list');
+        const evidenceSummary = document.getElementById('evidence-summary');
+        const contextScenario = document.getElementById('context-scenario');
+        const contextGoal = document.getElementById('context-goal');
+        const contextSkill = document.getElementById('context-skill');
+        const contextMetrics = document.getElementById('context-metrics');
+        const progressHelp = document.getElementById('progress-help');
+        let welcome = document.getElementById('welcome');
+        let sessionId = localStorage.getItem('industryResearchSessionId') || '';
+        let userId = localStorage.getItem('industryResearchUserId') || '';
+        if (!userId) {
+            userId = (crypto.randomUUID ? crypto.randomUUID() : 'user-' + Date.now() + '-' + Math.random().toString(16).slice(2));
+            localStorage.setItem('industryResearchUserId', userId);
+        }
+        let latestReport = '';
+        let latestUserConditions = {};
+        let requestInFlight = false;
+        let activeRunId = '';
+        let runtimeStatusStartedAt = 0;
+        let runtimeStatusTimer = null;
+
+        const agentStatusLabels = {
+            supervisor: '正在判断需求并规划下一步…',
+            market_analyst: '市场分析师正在搜索市场、趋势和机会…',
+            competition_analyst: '竞争分析师正在核对竞争格局和进入风险…',
+            business_analyst: '商业模式分析师正在分析成本、收入与落地方式…',
+            report_generator: '正在校验引用并整理最终报告…',
+            report_confirmation: '正在汇总研究进度…',
+            direct_answer: '正在搜索与你的问题最相关的信息…',
+            followup: '正在结合已有证据回答追问…',
+        };
+
+        function updateRuntimeClock() {
+            if (!runtimeStatusStartedAt) return;
+            const elapsed = Math.max(0, Math.floor((Date.now() - runtimeStatusStartedAt) / 1000));
+            runtimeStatusTime.textContent = elapsed < 60 ? `${elapsed} 秒` : `${Math.floor(elapsed / 60)}分${elapsed % 60}秒`;
+        }
+
+        function startRuntimeStatus(text = '正在理解你的问题…') {
+            runtimeStatusStartedAt = Date.now();
+            runtimeStatus.hidden = false;
+            runtimeStatusText.textContent = text;
+            updateRuntimeClock();
+            clearInterval(runtimeStatusTimer);
+            runtimeStatusTimer = setInterval(updateRuntimeClock, 1000);
+            scrollToBottom();
+        }
+
+        function updateRuntimeStatus(text) {
+            if (!requestInFlight || !text) return;
+            runtimeStatus.hidden = false;
+            runtimeStatusText.textContent = text;
+        }
+
+        function stopRuntimeStatus() {
+            clearInterval(runtimeStatusTimer);
+            runtimeStatusTimer = null;
+            runtimeStatusStartedAt = 0;
+            runtimeStatus.hidden = true;
+        }
+
+        function escapeHtml(value) {
+            return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+        }
+
+        function downloadReport() {
+            if (!latestReport) return;
+            const content = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>行业研究报告</title><style>body{margin:0;background:#f3f7f5;color:#1f2937;font-family:"Microsoft YaHei","PingFang SC",sans-serif}.page{max-width:900px;margin:36px auto;background:#fff;border:1px solid #dce9e2;border-radius:18px;box-shadow:0 18px 55px rgba(20,38,33,.09);overflow:hidden}.cover{padding:34px 42px;background:linear-gradient(135deg,#123f32,#19735a);color:#fff}.cover small{display:block;opacity:.75;letter-spacing:.14em;margin-bottom:8px}.cover h1{margin:0;font-size:28px}.content{padding:36px 42px}pre{margin:0;white-space:pre-wrap;word-break:break-word;font:15px/1.9 "Microsoft YaHei","PingFang SC",sans-serif}@media(max-width:720px){.page{margin:0;border:0;border-radius:0}.cover,.content{padding:24px}}</style></head><body><main class="page"><header class="cover"><small>INDUSTRY RESEARCH</small><h1>针对性行业研究报告</h1></header><section class="content"><pre>${escapeHtml(latestReport)}</pre></section></main></body></html>`;
+            const blob = new Blob([content], { type: 'text/html;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '行业研究报告.html';
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        downloadBtn.addEventListener('click', downloadReport);
+
+        async function ensureSession() {
+            if (sessionId) return sessionId;
+            const response = await fetch('/api/sessions', {
+                method: 'POST',
+                headers: { 'X-User-ID': userId },
+            });
+            const data = await response.json();
+            sessionId = data.session_id;
+            localStorage.setItem('industryResearchSessionId', sessionId);
+            return sessionId;
+        }
 
         let currentMessageDiv = null;  // 当前正在构建的消息
 
@@ -546,11 +948,20 @@
             }
         }
 
-        function updateProgress(scores) {
-            for (const [dim, score] of Object.entries(scores)) {
+        function updateProgress(scores, statuses = {}, researchComplete = false) {
+            const dimensions = new Set([...Object.keys(scores || {}), ...Object.keys(statuses || {})]);
+            for (const dim of dimensions) {
+                const score = Number(scores[dim] || 0);
                 const el = document.getElementById('dim-' + dim);
                 if (!el) continue;
-                if (score > 0) {
+                const status = statuses[dim] || '';
+                if (status === 'insufficient') {
+                    el.textContent = '证据不足';
+                    el.className = 'dim-status insufficient';
+                } else if (researchComplete && status === 'pending') {
+                    el.textContent = '未完成';
+                    el.className = 'dim-status pending';
+                } else if (score > 0) {
                     el.textContent = score + '/5';
                     el.className = 'dim-status done';
                 } else {
@@ -558,6 +969,296 @@
                     el.className = 'dim-status pending';
                 }
             }
+        }
+
+        function buildAnalystView(content) {
+            const text = String(content || '').replace(/\r\n/g, '\n').trim();
+            const view = document.createElement('div');
+            view.className = 'analyst-view';
+            const conclusionMatch = text.match(/(?:^|\n)结论\s*[：:]\s*([^\n]+)/);
+            if (conclusionMatch) {
+                const row = document.createElement('div');
+                row.className = 'analyst-conclusion';
+                const label = document.createElement('span');
+                label.className = 'analyst-conclusion-label';
+                label.textContent = '结论';
+                const value = document.createElement('span');
+                appendCompactEvidence(value, conclusionMatch[1].trim());
+                row.append(label, value);
+                view.appendChild(row);
+            }
+            const reasonMatch = text.match(/(?:^|\n)理由\s*[：:]\s*([\s\S]*?)(?=\n\s*\n|\n关键发现|$)/);
+            if (reasonMatch) {
+                const reason = document.createElement('div');
+                reason.className = 'analyst-reason';
+                appendCompactEvidence(reason, reasonMatch[1].trim());
+                view.appendChild(reason);
+            }
+            const findings = [];
+            const findingMarker = /(关键发现[一二三四五六七八九十\d]+)\s*[：:]/g;
+            const markers = [];
+            let match;
+            while ((match = findingMarker.exec(text)) !== null) {
+                markers.push({ label: match[1], start: match.index, contentStart: findingMarker.lastIndex });
+            }
+            markers.forEach((marker, index) => {
+                const nextStart = index + 1 < markers.length ? markers[index + 1].start : text.length;
+                let findingText = text.slice(marker.contentStart, nextStart).trim();
+                findingText = findingText.replace(/(?:^|\n)结论\s*[：:][\s\S]*$/, '').trim();
+                if (findingText) findings.push({ label: marker.label, text: findingText });
+            });
+            if (findings.length) {
+                const heading = document.createElement('div');
+                heading.className = 'analyst-finding-label';
+                heading.textContent = '关键发现';
+                view.appendChild(heading);
+                const grid = document.createElement('div');
+                grid.className = 'analyst-findings';
+                findings.slice(0, 3).forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'analyst-finding';
+                    const cardLabel = document.createElement('span');
+                    cardLabel.className = 'analyst-finding-label';
+                    cardLabel.textContent = item.label;
+                    card.appendChild(cardLabel);
+                    appendCompactEvidence(card, shortenFinding(item.text));
+                    grid.appendChild(card);
+                });
+                view.appendChild(grid);
+            }
+            const hasStructuredContent = Boolean(conclusionMatch || reasonMatch || findings.length);
+            if (hasStructuredContent && text.length > 480) {
+                const details = document.createElement('details');
+                details.className = 'analyst-details';
+                const summary = document.createElement('summary');
+                summary.textContent = '查看完整分析与证据说明';
+                const body = document.createElement('div');
+                body.className = 'analyst-details-body';
+                appendCompactEvidence(body, text);
+                details.append(summary, body);
+                view.appendChild(details);
+            }
+            if (!view.childNodes.length) appendCompactEvidence(view, text);
+            return view;
+        }
+
+        function shortenFinding(text) {
+            const clean = String(text || '').replace(/\s+/g, ' ').trim();
+            if (clean.length <= 160) return clean;
+            const sentence = clean.slice(0, 160);
+            const cut = Math.max(sentence.lastIndexOf('。'), sentence.lastIndexOf('；'));
+            return (cut > 70 ? sentence.slice(0, cut + 1) : sentence + '…');
+        }
+
+        function appendCompactEvidence(container, text) {
+            String(text || '').split(/(\[E\d+\])/g).forEach(part => {
+                if (/^\[E\d+\]$/.test(part)) {
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'evidence-chip';
+                    chip.textContent = part.slice(1, -1);
+                    chip.title = '在右侧查看这条证据';
+                    chip.addEventListener('click', () => {
+                        const target = document.getElementById('evidence-' + chip.textContent);
+                        if (!target) return;
+                        document.querySelectorAll('.evidence-card.highlighted').forEach(card => card.classList.remove('highlighted'));
+                        target.classList.add('highlighted');
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(() => target.classList.remove('highlighted'), 2200);
+                    });
+                    container.appendChild(chip);
+                } else if (part) {
+                    container.appendChild(document.createTextNode(part));
+                }
+            });
+        }
+
+        function looksLikeReportHeading(line) {
+            const value = String(line || '').trim();
+            if (!value || value.length > 32) return false;
+            if (/^[一二三四五六七八九十]+[、.．]/.test(value)) return true;
+            if (/^\d+[、.．]/.test(value)) return true;
+            return /^(决策结论|直接结论|核心结论|问题结论|推荐结论|直接回答|用户情况与假设|关键依据|关键发现|市场验证|进入方式|行动建议|针对你的行动建议|实施路线|最小可行验证|情景测算|主要风险|风险与下一步|风险|未来7天|未来 7 天|下一步|证据不足|自动引用检查)$/.test(value.replace(/[：:]$/, ''));
+        }
+
+        function appendEvidenceLinks(container, text, evidenceUrls) {
+            const parts = String(text || '').split(/(\[(?:E|U)\d+\])/g);
+            parts.forEach(part => {
+                if (/^\[E\d+\]$/.test(part) && evidenceUrls[part]) {
+                    const link = document.createElement('a');
+                    link.href = evidenceUrls[part];
+                    link.target = '_blank';
+                    link.rel = 'noopener noreferrer';
+                    link.textContent = part;
+                    link.title = '打开对应证据来源';
+                    container.appendChild(link);
+                } else if (/^\[U\d+\]$/.test(part) && latestUserConditions[part]) {
+                    const chip = document.createElement('span');
+                    chip.className = 'user-condition-chip';
+                    chip.textContent = part;
+                    chip.title = `适用条件：${latestUserConditions[part]}`;
+                    container.appendChild(chip);
+                } else if (part) {
+                    container.appendChild(document.createTextNode(part));
+                }
+            });
+        }
+
+        function splitReportPoints(text) {
+            const value = String(text || '').trim();
+            if (!value) return [];
+            const markerPattern = /(?:^|\s)(第一|第二|第三|第四|第五|第六|1[.、．]|2[.、．]|3[.、．]|4[.、．]|5[.、．]|6[.、．])\s*[，,:：、]?\s*/g;
+            const markers = [];
+            let match;
+            while ((match = markerPattern.exec(value)) !== null) {
+                markers.push({ start: match.index, contentStart: markerPattern.lastIndex });
+            }
+            if (!markers.length) return value.split(/\n+/).map(item => item.trim()).filter(Boolean);
+            return markers.map((marker, index) => {
+                const end = index + 1 < markers.length ? markers[index + 1].start : value.length;
+                return value.slice(marker.contentStart, end).trim();
+            }).filter(Boolean);
+        }
+
+        function appendReportPoint(point, text, index, evidenceUrls) {
+            const badge = document.createElement('div');
+            badge.className = 'report-point-number';
+            badge.textContent = String(index + 1);
+            const content = document.createElement('div');
+            content.className = 'report-point-content';
+            const clean = String(text || '').replace(/^(第一|第二|第三|第四|第五|第六)\s*[，,:：、]?\s*/, '').trim();
+            const detailMatch = clean.match(/^(.{4,32}?[。；：:])([\s\S]+)$/);
+            if (detailMatch) {
+                const title = document.createElement('span');
+                title.className = 'report-point-title';
+                appendEvidenceLinks(title, detailMatch[1], evidenceUrls);
+                const detail = document.createElement('span');
+                detail.className = 'report-point-detail';
+                appendEvidenceLinks(detail, detailMatch[2].trim(), evidenceUrls);
+                content.append(title, detail);
+            } else {
+                appendEvidenceLinks(content, clean, evidenceUrls);
+            }
+            point.append(badge, content);
+        }
+
+        function buildReportView(content, citationStatus) {
+            const fullText = String(content || '').replace(/\r\n/g, '\n').trim();
+            const shell = document.createElement('div');
+            shell.className = 'report-shell';
+
+            if (citationStatus === 'insufficient') {
+                const status = document.createElement('div');
+                status.className = 'report-status';
+                status.textContent = '证据覆盖不足：报告中的部分数字或事实缺少有效引用，建议先核对来源再用于决策。';
+                shell.appendChild(status);
+            }
+
+            const toolbar = document.createElement('div');
+            toolbar.className = 'report-toolbar';
+            const headingBox = document.createElement('div');
+            const title = document.createElement('div');
+            title.className = 'report-toolbar-title';
+            title.textContent = '针对性行业研究报告';
+            const note = document.createElement('div');
+            note.className = 'report-toolbar-note';
+            note.textContent = '正文已完整展开，可继续追问或下载保存';
+            headingBox.append(title, note);
+            const copyButton = document.createElement('button');
+            copyButton.type = 'button';
+            copyButton.className = 'confirm-btn secondary';
+            copyButton.textContent = '复制全文';
+            copyButton.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(fullText);
+                    copyButton.textContent = '已复制';
+                    setTimeout(() => { copyButton.textContent = '复制全文'; }, 1600);
+                } catch (_) {
+                    copyButton.textContent = '复制失败';
+                }
+            });
+            toolbar.append(headingBox, copyButton);
+            shell.appendChild(toolbar);
+
+            const sourceMatch = fullText.match(/(?:^|\n)来源\s*\n/);
+            const mainText = sourceMatch ? fullText.slice(0, sourceMatch.index).trim() : fullText;
+            const sourceText = sourceMatch ? fullText.slice(sourceMatch.index + sourceMatch[0].length).trim() : '';
+            const evidenceUrls = {};
+            sourceText.split('\n').forEach(line => {
+                const match = line.match(/^\[(E\d+)\].*?链接：\s*(https?:\/\/\S+)/);
+                if (match) evidenceUrls[`[${match[1]}]`] = match[2].replace(/[。；，,]+$/, '');
+            });
+            const normalizedMainText = mainText
+                .replace(/\s*(关键依据|行动建议|针对你的行动建议|主要风险|未来\s*7\s*天)\s*[：:]\s*/g, '\n\n$1\n')
+                .replace(/^\s+/, '');
+            const blocks = normalizedMainText.split(/\n\s*\n+/).map(item => item.trim()).filter(Boolean);
+            let highlightIndex = blocks.findIndex(item => /^决策结论\s*[：:]?/m.test(item));
+            if (highlightIndex < 0) highlightIndex = blocks.findIndex(item => item.length >= 45);
+            if (highlightIndex < 0 && blocks.length) highlightIndex = 0;
+
+            if (highlightIndex >= 0) {
+                const highlight = document.createElement('section');
+                highlight.className = 'report-highlight';
+                const label = document.createElement('div');
+                label.className = 'report-highlight-label';
+                label.textContent = '先看结论';
+                const value = document.createElement('div');
+                value.className = 'report-highlight-text';
+                const highlightText = blocks[highlightIndex].replace(/^决策结论\s*[：:]?\s*/m, '').trim();
+                appendEvidenceLinks(value, highlightText, evidenceUrls);
+                highlight.append(label, value);
+                shell.appendChild(highlight);
+            }
+
+            const body = document.createElement('div');
+            body.className = 'report-content';
+            blocks.forEach((block, index) => {
+                if (index === highlightIndex) return;
+                const lines = block.split('\n');
+                const section = document.createElement('section');
+                section.className = 'report-section';
+                let sectionHeading = '';
+                if (looksLikeReportHeading(lines[0])) {
+                    const sectionTitle = document.createElement('div');
+                    sectionTitle.className = 'report-section-title';
+                    sectionHeading = lines.shift().trim().replace(/[：:]$/, '');
+                    sectionTitle.textContent = sectionHeading;
+                    section.appendChild(sectionTitle);
+                }
+                if (lines.length) {
+                    const rawSectionText = lines.join('\n').trim();
+                    const lineItems = splitReportPoints(rawSectionText);
+                    if (/^(关键依据|行动建议|针对你的行动建议|主要风险|未来7天|未来 7 天)$/.test(sectionHeading) && lineItems.length) {
+                        const points = document.createElement('div');
+                        points.className = 'report-points';
+                        lineItems.forEach((line, pointIndex) => {
+                            const point = document.createElement('div');
+                            point.className = 'report-point';
+                            appendReportPoint(point, line, pointIndex, evidenceUrls);
+                            points.appendChild(point);
+                        });
+                        section.appendChild(points);
+                    } else {
+                        const sectionBody = document.createElement('div');
+                        sectionBody.className = 'report-section-body';
+                        appendEvidenceLinks(sectionBody, lines.join('\n').trim(), evidenceUrls);
+                        section.appendChild(sectionBody);
+                    }
+                }
+                body.appendChild(section);
+            });
+            shell.appendChild(body);
+
+            if (sourceText) {
+                const sourceNote = document.createElement('div');
+                sourceNote.className = 'report-source-note';
+                const sourceCount = (sourceText.match(/\[E\d+\]/g) || []).length;
+                sourceNote.textContent = sourceCount
+                    ? `已收集 ${sourceCount} 条可追溯来源；详细摘录请查看右侧证据面板。`
+                    : '已收集可追溯来源；详细摘录请查看右侧证据面板。';
+                shell.appendChild(sourceNote);
+            }
+            return shell;
         }
 
         function addMessage(type, data) {
@@ -583,7 +1284,16 @@
 
             const bubble = document.createElement('div');
             bubble.className = 'bubble';
-            bubble.textContent = data.content || '';
+            if (type === 'report') bubble.classList.add('report-preview');
+            // Reports and answers are intentionally plain text. Keeping textContent
+            // here prevents model-generated Markdown/HTML from becoming UI markup.
+            if (type === 'report') {
+                bubble.appendChild(buildReportView(data.content || '', data.citation_status || ''));
+            } else if (type === 'analyst') {
+                bubble.appendChild(buildAnalystView(data.content || ''));
+            } else {
+                bubble.textContent = data.content || '';
+            }
 
             body.appendChild(meta);
             body.appendChild(bubble);
@@ -593,6 +1303,66 @@
             chatArea.appendChild(msgDiv);
             scrollToBottom();
             return msgDiv;
+        }
+
+        function addQuestionCard(data) {
+            if (welcome && welcome.style.display !== 'none') welcome.style.display = 'none';
+            const question = data.question || {};
+            if (!question.question) {
+                addMessage('analyst', { icon: '❓', name: '需要补充', content: data.content, color: '#f59e0b' });
+                return;
+            }
+
+            const card = document.createElement('section');
+            card.className = 'questionnaire-card';
+            const isConsent = question.topic === 'interview_consent';
+            if (isConsent) card.classList.add('consent-card');
+            const current = Math.max(1, Number(data.interview_round || 1));
+            const total = Math.max(current, Number(data.interview_target_questions || current));
+            const score = Math.max(0, Math.min(100, Number(data.interview_readiness_score || 0)));
+
+            const progressRow = document.createElement('div'); progressRow.className = 'question-progress-row';
+            const counter = document.createElement('span'); counter.textContent = isConsent ? '研究方式确认' : `访谈问题 ${current}/${total}`;
+            const readiness = document.createElement('span'); readiness.textContent = isConsent ? '可随时提前开始调研' : `信息准备度 ${score}%`;
+            progressRow.append(counter, readiness);
+            const progress = document.createElement('div'); progress.className = 'question-progress';
+            const progressValue = document.createElement('span'); progressValue.style.width = `${score}%`; progress.appendChild(progressValue);
+            const topic = document.createElement('div'); topic.className = 'question-topic'; topic.textContent = question.title || '补充信息';
+            const title = document.createElement('h3'); title.textContent = question.question;
+            const why = document.createElement('div'); why.className = 'question-why'; why.textContent = `为什么问：${question.why || '这个信息会影响后续建议。'}`;
+            const options = document.createElement('div'); options.className = 'question-options';
+
+            (question.options || []).forEach(label => {
+                const button = document.createElement('button'); button.type = 'button'; button.className = 'option-btn'; button.textContent = label;
+                if (isConsent && label.includes('推荐')) button.classList.add('recommended');
+                button.addEventListener('click', () => { card.remove(); input.value = label; sendMessage(); });
+                options.appendChild(button);
+            });
+            if (!isConsent && question.allow_custom !== false) {
+                const other = document.createElement('button'); other.type = 'button'; other.className = 'option-btn custom-option'; other.textContent = '其他';
+                const custom = document.createElement('div'); custom.className = 'custom-answer';
+                const customInput = document.createElement('input'); customInput.type = 'text'; customInput.placeholder = '请填写你的情况…'; customInput.maxLength = 500;
+                const customSubmit = document.createElement('button'); customSubmit.type = 'button'; customSubmit.textContent = '提交';
+                const submitCustom = () => { const value = customInput.value.trim(); if (!value) { customInput.focus(); return; } card.remove(); input.value = value; sendMessage(); };
+                other.addEventListener('click', () => { custom.classList.add('show'); other.style.display = 'none'; customInput.focus(); });
+                customSubmit.addEventListener('click', submitCustom);
+                customInput.addEventListener('keydown', event => { if (event.key === 'Enter') submitCustom(); });
+                custom.append(customInput, customSubmit); options.append(other, custom);
+            }
+            card.append(progressRow, progress, topic, title, why, options);
+            if (question.skip_label) {
+                const skip = document.createElement('button'); skip.type = 'button'; skip.className = 'question-skip'; skip.textContent = `${question.skip_label} →`;
+                skip.addEventListener('click', () => { card.remove(); input.value = question.skip_label; sendMessage(); });
+                card.appendChild(skip);
+            }
+            if (question.start_label) {
+                const start = document.createElement('button'); start.type = 'button'; start.className = 'question-skip'; start.textContent = `${question.start_label} →`;
+                start.addEventListener('click', () => { card.remove(); input.value = '直接开始调研'; sendMessage(); });
+                card.appendChild(start);
+            }
+            chatArea.appendChild(card);
+            input.placeholder = question.allow_custom ? '也可以在这里输入自己的情况…' : '输入消息…';
+            scrollToBottom();
         }
 
         function addThinking(data) {
@@ -690,21 +1460,32 @@
 
         // ============ 发送消息 ============
         async function sendMessage() {
+            if (requestInFlight) return;
             const text = input.value.trim();
             if (!text) return;
 
+            document.querySelectorAll('.questionnaire-card').forEach(card => card.remove());
+
+            // 同一 session 保留完整对话历史；需要清空时使用“重新调研”。
+            if (welcome) welcome.style.display = 'none';
+
             // 禁用输入
             input.value = '';
-            sendBtn.disabled = true;
-            sendBtn.textContent = '调研中...';
+            requestInFlight = true;
+            sendBtn.disabled = false;
+            sendBtn.textContent = '⏹ 停止研究';
+            sendBtn.classList.add('stop-mode');
+            sendBtn.onclick = cancelResearch;
 
             addUserMessage(text);
+            startRuntimeStatus('正在理解你的问题…');
 
             try {
-                const response = await fetch('/chat', {
+                const currentSession = await ensureSession();
+                const response = await fetch('/api/sessions/' + currentSession + '/messages', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: text }),
+                    headers: { 'Content-Type': 'application/json', 'X-User-ID': userId },
+                    body: JSON.stringify({ message: text, user_id: userId }),
                 });
 
                 if (!response.ok) {
@@ -725,6 +1506,7 @@
                     buffer = lines.pop();  // 保留最后不完整的一行
 
                     for (const line of lines) {
+                        if (line.startsWith('id:')) window.lastEventId = line.slice(3).trim();
                         if (line.startsWith('data:')) {
                             const dataStr = line.slice(5).trim();
                             if (!dataStr) continue;
@@ -745,23 +1527,43 @@
                     color: '#ef4444',
                 });
             } finally {
+                requestInFlight = false;
+                stopRuntimeStatus();
                 sendBtn.disabled = false;
                 sendBtn.textContent = '发送';
+                sendBtn.classList.remove('stop-mode');
+                sendBtn.onclick = sendMessage;
                 setActiveAgent(null);
             }
         }
 
+        async function cancelResearch() {
+            if (!requestInFlight || !sessionId) return;
+            sendBtn.disabled = true;
+            sendBtn.textContent = '正在停止…';
+            updateRuntimeStatus('正在安全停止研究，并保存当前进度…');
+            try {
+                await fetch('/api/sessions/' + sessionId + '/cancel', { method: 'POST', headers: { 'X-User-ID': userId } });
+            } catch (_) {
+                sendBtn.disabled = false;
+                sendBtn.textContent = '⏹ 停止研究';
+            }
+        }
+
         function handleEvent(data) {
+            if (data.type === 'init' && data.run_id) activeRunId = data.run_id;
             switch (data.type) {
                 case 'agent_active':
                     setActiveAgent(data.node);
+                    updateRuntimeStatus(agentStatusLabels[data.node] || `${data.name || '智能体'}正在处理…`);
                     break;
 
                 case 'progress':
-                    updateProgress(data.scores);
+                    updateProgress(data.scores, data.status || {});
                     break;
 
                 case 'supervisor':
+                    updateResearchContext(data);
                     addMessage('supervisor', {
                         icon: data.icon,
                         name: data.name + '（决策）',
@@ -771,15 +1573,53 @@
                     break;
 
                 case 'report':
+                    latestReport = data.content || '';
+                    latestUserConditions = Object.fromEntries((data.user_conditions || []).map(item => [`[${item.id}]`, `${item.key}：${item.value}`]));
+                    downloadBtn.disabled = !latestReport || data.report_generated === false;
+                    downloadBtn.hidden = !latestReport || data.report_generated === false;
                     addMessage('report', {
                         icon: data.icon,
                         name: data.name,
                         content: data.content,
                         color: data.color,
                     });
+                    refreshEvidence();
+                    break;
+
+                case 'followup':
+                    addMessage('analyst', {
+                        icon: data.icon,
+                        name: data.name,
+                        content: data.content,
+                        color: data.color,
+                    });
+                    refreshEvidence();
+                    break;
+
+                case 'question':
+                    addQuestionCard(data);
+                    break;
+
+                case 'report_confirmation':
+                    addMessage('supervisor', {
+                        icon: '💡',
+                        name: '研究助手',
+                        content: data.content,
+                        color: '#f59e0b',
+                    });
+                    addConfirmationActions();
+                    break;
+
+                case 'trace':
+                    // Trace 保留在服务端/状态中，主界面不刷屏。
+                    if (data.event && data.event.tool === 'search') updateRuntimeStatus('正在联网搜索高价值来源…');
+                    if (data.event && data.event.tool === 'fetch_page') updateRuntimeStatus('正在读取网页正文并提取证据…');
+                    if (data.event && data.event.tool === 'extract_evidence') updateRuntimeStatus('正在校验数字、年份和来源摘录…');
+                    refreshEvidence();
                     break;
 
                 case 'analyst':
+                    // 分析师发言完整展示（服务端已剥离工具标签，纯中文叙事）
                     addMessage('analyst', {
                         icon: data.icon,
                         name: data.name,
@@ -793,16 +1633,30 @@
                     break;
 
                 case 'done':
-                    // 调研完成
-                    addMessage('analyst', {
-                        icon: '✅',
-                        name: '调研完成',
-                        content: '行业：' + data.industry + ' | 轮次：' + data.turn_count,
-                        color: '#10b981',
+                    activeRunId = '';
+                    // 中间访谈和 Follow-up 不重复显示“调研完成”。正式
+                    // 报告事件本身已提供清晰的完成状态。
+                    updateProgress(data.scores || {}, data.status || {}, Boolean(data.research_complete));
+                    refreshEvidence();
+                    if (latestReport) { downloadBtn.hidden = false; downloadBtn.disabled = false; }
+                    stopRuntimeStatus();
+                    break;
+
+                case 'cancelled':
+                    activeRunId = '';
+                    stopRuntimeStatus();
+                    addMessage('supervisor', {
+                        icon: '⏹️',
+                        name: '研究已停止',
+                        content: data.message || '已停止后续研究，并保留当前进度。',
+                        color: '#64748b',
                     });
+                    refreshEvidence();
                     break;
 
                 case 'error':
+                    activeRunId = '';
+                    stopRuntimeStatus();
                     addMessage('analyst', {
                         icon: '❌',
                         name: '错误',
@@ -811,6 +1665,292 @@
                     });
                     break;
             }
+        }
+
+        const scenarioLabels = {
+            idea: '构思验证', planning: '筹备决策', operating_diagnosis: '经营诊断',
+            existing_product_extension: '现有能力扩展', company_research: '企业研究',
+            market_question: '具体问题', option_comparison: '方案比较', unknown: '等待识别',
+        };
+
+        function updateResearchContext(data) {
+            if (data.scenario) contextScenario.textContent = scenarioLabels[data.scenario] || data.scenario;
+            if (data.decision_goal) contextGoal.textContent = data.decision_goal;
+            if (data.selected_skill) contextSkill.textContent = `${data.selected_skill} · ${Math.round(Number(data.skill_confidence || 0) * 100)}%`;
+            if (data.context_metrics) updateContextMetrics(data.context_metrics);
+            const planned = new Set((data.research_plan || []).flatMap(step => step.dimensions || []));
+            if (planned.size) {
+                if (progressHelp) progressHelp.textContent = `本次调研范围：${Array.from(planned).join('、')}。未纳入的维度不会影响本次结论；4/5 表示证据覆盖度，不是准确率。`;
+                document.querySelectorAll('.dim-item').forEach(item => {
+                    const status = item.querySelector('.dim-status');
+                    item.style.display = planned.has(status.id.replace('dim-', '')) ? 'flex' : 'none';
+                });
+            }
+        }
+
+        function updateContextMetrics(metrics) {
+            if (!metrics || !metrics.call_count) {
+                contextMetrics.textContent = '';
+                return;
+            }
+            const budget = Number(metrics.budget || 24000);
+            const after = Number(metrics.after_tokens || 0);
+            const compressed = Number(metrics.compression_count || 0) > 0 ? '已压缩' : '未压缩';
+            const conditions = Number(metrics.preserved_condition_count || 0);
+            const evidence = Number(metrics.preserved_evidence_count || 0);
+            contextMetrics.textContent = `上下文 ${after.toLocaleString()}/${budget.toLocaleString()} · ${compressed} · 条件${conditions} · 证据${evidence}`;
+        }
+
+        async function refreshEvidence() {
+            if (!sessionId) return;
+            try {
+                const response = await fetch('/api/sessions/' + sessionId);
+                if (!response.ok) return;
+                const data = await response.json();
+                contextScenario.textContent = scenarioLabels[data.scenario] || data.scenario || '等待识别';
+                contextGoal.textContent = data.decision_goal || '先告诉我你要解决的问题';
+                contextSkill.textContent = data.selected_skill ? `${data.selected_skill} · ${Math.round(Number(data.skill_confidence || 0) * 100)}%` : '等待路由';
+                updateContextMetrics(data.context_metrics || {});
+                updateProgress(data.scores || {}, data.dimension_status || {}, Boolean(data.research_complete));
+                const active = new Set(data.active_dimensions || []);
+                if (active.size) {
+                    if (progressHelp) progressHelp.textContent = `本次调研范围：${Array.from(active).join('、')}。未纳入的维度不会影响本次结论；4/5 表示证据覆盖度，不是准确率。`;
+                    document.querySelectorAll('.dim-item').forEach(item => {
+                        const status = item.querySelector('.dim-status');
+                        item.style.display = active.has(status.id.replace('dim-', '')) ? 'flex' : 'none';
+                    });
+                }
+                if (activeRunId && !latestReport) {
+                    // Redis event streams are replayable; status polling keeps the
+                    // UI useful when the stream is temporarily unavailable.
+                    const poll = setInterval(async () => {
+                        try {
+                            const status = await fetch('/api/runs/' + activeRunId).then(r => r.json());
+                            if (['succeeded','failed','timed_out','cancelled'].includes(status.status)) clearInterval(poll);
+                        } catch (_) {}
+                    }, 2000);
+                    setTimeout(() => clearInterval(poll), 300000);
+                }
+                evidenceList.innerHTML = '';
+                const items = data.evidence || [];
+                const conflicts = data.conflicts || [];
+                evidenceSummary.textContent = items.length
+                    ? `已收集 ${items.length} 条可追溯证据 · ${data.independent_source_count || 0} 个独立来源${conflicts.length ? `；发现 ${conflicts.length} 条口径冲突` : ''}`
+                    : '尚未取得可引用证据';
+                if (conflicts.length) {
+                    const conflict = document.createElement('div');
+                    conflict.className = 'evidence-conflict';
+                    conflict.textContent = `来源口径存在 ${conflicts.length} 处差异，已在报告中降低确定性，请核对年份、地区或统计口径。`;
+                    evidenceList.appendChild(conflict);
+                }
+                if (!items.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'evidence-empty';
+                    empty.textContent = '具体事实、原文摘录和来源链接会随研究过程加入这里。';
+                    evidenceList.appendChild(empty);
+                    return;
+                }
+                items.forEach(item => {
+                    const card = document.createElement('article');
+                    card.className = 'evidence-card';
+                    card.id = 'evidence-' + (item.id || 'unknown');
+                    const top = document.createElement('div'); top.className = 'evidence-card-top';
+                    const id = document.createElement('span'); id.className = 'evidence-id'; id.textContent = item.id || 'Evidence';
+                    const kind = document.createElement('span'); kind.className = 'evidence-kind'; kind.textContent = `${item.dimension || ''} · ${item.source_type || 'web'}`;
+                    top.append(id, kind);
+                    const title = document.createElement('div'); title.className = 'evidence-title'; title.textContent = item.source_title || '未命名来源';
+                    const excerpt = document.createElement('div'); excerpt.className = 'evidence-excerpt'; excerpt.textContent = item.excerpt || '暂无摘录';
+                    const meta = document.createElement('div'); meta.className = 'evidence-meta';
+                    const freshness = item.period || item.published_at || '未标注年份';
+                    const region = item.region || '未标注地区';
+                    meta.textContent = `${freshness} · ${region}${item.is_reprint ? ' · 转载来源，不计作独立来源' : ''}`;
+                    card.append(top, title, meta, excerpt);
+                    if (item.source_url) {
+                        const link = document.createElement('a'); link.className = 'evidence-link'; link.textContent = '打开原始来源 ↗';
+                        link.href = item.source_url; link.target = '_blank'; link.rel = 'noopener noreferrer'; card.appendChild(link);
+                    }
+                    evidenceList.appendChild(card);
+                });
+            } catch (_) {
+                evidenceSummary.textContent = '证据面板暂时无法更新';
+            }
+        }
+
+        async function refreshSessionList() {
+            const response = await fetch('/api/sessions', { headers: { 'X-User-ID': userId } });
+            if (!response.ok) throw new Error('无法读取历史会话');
+            const data = await response.json();
+            const sessions = Array.isArray(data.sessions) ? data.sessions : [];
+            sessionList.innerHTML = '';
+            if (!sessions.length) {
+                const empty = document.createElement('div');
+                empty.className = 'session-empty';
+                empty.textContent = '还没有可恢复的历史调研。';
+                sessionList.appendChild(empty);
+                return sessions;
+            }
+            sessions.forEach(item => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'session-item' + (item.session_id === sessionId ? ' active' : '');
+                const title = document.createElement('span');
+                title.className = 'session-title';
+                title.textContent = item.title || '未命名调研';
+                const time = document.createElement('span');
+                time.className = 'session-time';
+                time.textContent = item.updated_at
+                    ? new Date(item.updated_at * 1000).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+                    : '';
+                const id = document.createElement('span');
+                id.className = 'session-id';
+                id.textContent = '会话 ' + String(item.session_id || '').slice(0, 8);
+                button.append(title, time, id);
+                button.addEventListener('click', async () => {
+                    sessionId = item.session_id;
+                    localStorage.setItem('industryResearchSessionId', sessionId);
+                    historyDialog.close();
+                    await restoreSession();
+                });
+                sessionList.appendChild(button);
+            });
+            return sessions;
+        }
+
+        async function restoreSession() {
+            if (!sessionId) return;
+            try {
+                const response = await fetch('/api/sessions/' + sessionId);
+                if (response.status === 404) {
+                    localStorage.removeItem('industryResearchSessionId');
+                    sessionId = '';
+                    return;
+                }
+                if (!response.ok) return;
+                const data = await response.json();
+                const history = Array.isArray(data.history) ? data.history : [];
+                const latestRun = data.run || null;
+                if (latestRun && ['queued', 'running', 'retrying'].includes(latestRun.status)) {
+                    activeRunId = latestRun.run_id;
+                    const percent = Math.round(Number(latestRun.progress || 0) * 100);
+                    startRuntimeStatus(`正在恢复研究进度：${latestRun.current_node || '等待执行'}（${percent}%）`);
+                }
+                if (!history.length) {
+                    chatArea.innerHTML = '<div class="welcome"><div class="big-icon">🔎</div><h1>开始新的针对性调研</h1><p>描述你正在考虑的决策、项目或经营问题，我会先判断是否需要进入访谈。</p></div>';
+                    latestReport = '';
+                    downloadBtn.disabled = true;
+                    downloadBtn.hidden = true;
+                    await refreshEvidence();
+                    return;
+                }
+                chatArea.innerHTML = '';
+                welcome = null;
+                latestReport = '';
+                latestUserConditions = Object.fromEntries((data.user_conditions || []).map(item => [`[${item.id}]`, `${item.key}：${item.value}`]));
+                history.forEach(item => {
+                    const type = ['user', 'analyst', 'supervisor', 'report'].includes(item.type) ? item.type : 'analyst';
+                    addMessage(type, item);
+                    if (type === 'report') latestReport = item.content || '';
+                });
+                downloadBtn.disabled = !latestReport || data.report_generated === false;
+                downloadBtn.hidden = !latestReport || data.report_generated === false;
+                if (data.awaiting_user && data.current_interview_question && data.current_interview_question.question) {
+                    addQuestionCard({
+                        content: data.pending_question,
+                        question: data.current_interview_question,
+                        interview_round: data.interview_round,
+                        interview_target_questions: data.interview_target_questions,
+                        interview_readiness_score: data.interview_readiness_score,
+                    });
+                } else if (data.report_confirmation_pending) {
+                    addConfirmationActions();
+                }
+                await refreshEvidence();
+            } catch (_) {
+                // A temporary restore failure should not prevent starting a new
+                // message; the persisted checkpoint remains available.
+            }
+        }
+
+        async function bootstrapSession() {
+            if (sessionId) {
+                await restoreSession();
+                return;
+            }
+            try {
+                const sessions = await refreshSessionList();
+                if (sessions.length) {
+                    sessionId = sessions[0].session_id;
+                    localStorage.setItem('industryResearchSessionId', sessionId);
+                    await restoreSession();
+                }
+            } catch (_) {
+                // The welcome page remains usable when the history catalog is unavailable.
+            }
+        }
+
+        async function refreshMemory() {
+            const response = await fetch('/api/memory/profile', { headers: { 'X-User-ID': userId } });
+            const data = await response.json();
+            memoryFacts.innerHTML = '';
+            const entries = Object.entries(data.facts || {});
+            if (!entries.length) {
+                const empty = document.createElement('div');
+                empty.className = 'memory-fact'; empty.textContent = '还没有保存长期信息。'; memoryFacts.appendChild(empty);
+                return;
+            }
+            entries.forEach(([key, value]) => {
+                const item = document.createElement('div'); item.className = 'memory-fact';
+                item.textContent = `${key}：${typeof value === 'string' ? value : JSON.stringify(value)}`;
+                memoryFacts.appendChild(item);
+            });
+        }
+
+        document.getElementById('memory-btn').addEventListener('click', async () => {
+            await refreshMemory(); memoryDialog.showModal();
+        });
+        document.getElementById('history-btn').addEventListener('click', async () => {
+            try {
+                await refreshSessionList();
+                historyDialog.showModal();
+            } catch (_) {
+                addMessage('analyst', { name: '系统提示', icon: '⚠️', content: '历史会话暂时无法读取，请确认服务正在运行。' });
+            }
+        });
+        document.getElementById('history-close').addEventListener('click', () => historyDialog.close());
+        document.getElementById('memory-close').addEventListener('click', () => memoryDialog.close());
+        document.getElementById('memory-save').addEventListener('click', async () => {
+            const key = document.getElementById('memory-key').value.trim();
+            const value = document.getElementById('memory-value').value.trim();
+            if (!key || !value) return;
+            await fetch('/api/memory/profile', {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'X-User-ID': userId },
+                body: JSON.stringify({ key, value, confirmed: true }),
+            });
+            document.getElementById('memory-key').value = '';
+            document.getElementById('memory-value').value = '';
+            await refreshMemory();
+        });
+        document.getElementById('memory-clear').addEventListener('click', async () => {
+            await fetch('/api/memory/profile', { method: 'DELETE', headers: { 'X-User-ID': userId } });
+            await refreshMemory();
+        });
+
+        function addConfirmationActions() {
+            const actions = document.createElement('div');
+            actions.className = 'confirmation-actions';
+            actions.innerHTML = '<button class="confirm-btn secondary">继续提问</button><button class="confirm-btn primary">生成报告</button>';
+            const buttons = actions.querySelectorAll('button');
+            buttons[0].addEventListener('click', () => {
+                actions.remove();
+                input.focus();
+            });
+            buttons[1].addEventListener('click', () => {
+                input.value = '生成报告';
+                sendMessage();
+                actions.remove();
+            });
+            chatArea.appendChild(actions);
+            scrollToBottom();
         }
 
         // ============ 回车发送 ============
@@ -829,7 +1969,24 @@
 
         // 重置
         document.getElementById('reset-btn').addEventListener('click', async () => {
-            await fetch('/reset');
+            if (sessionId) {
+                const response = await fetch('/api/sessions/' + sessionId + '/reset', {
+                    method: 'POST', headers: { 'X-User-ID': userId },
+                });
+                const data = await response.json();
+                sessionId = data.session_id;
+            } else {
+                sessionId = '';
+                await ensureSession();
+            }
+            localStorage.setItem('industryResearchSessionId', sessionId);
+            latestReport = '';
+            downloadBtn.disabled = true;
+            downloadBtn.hidden = true;
+            contextScenario.textContent = '等待识别';
+            contextGoal.textContent = '先告诉我你要解决的问题';
+            evidenceSummary.textContent = '研究开始后在这里显示来源';
+            evidenceList.innerHTML = '<div class="evidence-empty">具体事实、原文摘录和来源链接会随研究过程加入这里。</div>';
             chatArea.innerHTML = '';
             // 恢复欢迎界面
             const newWelcome = document.createElement('div');
@@ -837,23 +1994,25 @@
             newWelcome.id = 'welcome';
             newWelcome.innerHTML = `
                 <div class="big-icon">🔍</div>
-                <h1>想调研什么行业？</h1>
-                <p>告诉我你想进入的赛道或想做的生意，我会调度市场分析师、竞争分析师和商业模式分析师，为你输出一份完整的行业调研报告。</p>
+                <h1>你正在做什么决定？</h1>
+                <p>先通过问卷式访谈了解你的现状、资源和约束，再进行针对性联网研究。结论会随你的条件变化，而不是套用通用报告。</p>
                 <div class="examples">
-                    <div class="example-chip" onclick="sendExample(this.textContent)">我想在二线城市开一家宠物烘焙店，预算30万</div>
-                    <div class="example-chip" onclick="sendExample(this.textContent)">咖啡赛道现在还能进吗</div>
-                    <div class="example-chip" onclick="sendExample(this.textContent)">二手奢侈品电商的利润率大概多少</div>
+                    <div class="example-chip" onclick="sendExample(this.textContent)">我想在二线城市开一家宠物店，预算30万，还没开始</div>
+                    <div class="example-chip" onclick="sendExample(this.textContent)">我的门店最近利润下降，想找出原因</div>
+                    <div class="example-chip" onclick="sendExample(this.textContent)">工厂现有CNC设备，想增加机器人焊接产线</div>
                 </div>
             `;
             chatArea.appendChild(newWelcome);
             // 重置进度条
             ['市场','竞争','商业模式','机会','风险','趋势'].forEach(dim => {
                 const el = document.getElementById('dim-' + dim);
-                if (el) { el.textContent = '待调研'; el.className = 'dim-status pending'; }
+                if (el) { el.textContent = '待调研'; el.className = 'dim-status pending'; el.closest('.dim-item').style.display = 'flex'; }
             });
             // 重新绑定 welcome
-            window.welcome = document.getElementById('welcome');
+            welcome = document.getElementById('welcome');
         });
+
+        bootstrapSession();
     </script>
 </body>
 </html>
